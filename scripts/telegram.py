@@ -16,6 +16,10 @@ if ok + ko:
 lines += ["", "🔗 https://franklinperez20.github.io",
           "⚠️ Apuestas sencillas y montos pequeños: 80 % no es seguro."]
 text = "\n".join(lines)
+if os.environ.get("COMMIT_MSG","").startswith("Actualizacion") and D.get("aviso"):
+    text = D["aviso"] + "\n\n🔗 https://franklinperez20.github.io"
+elif os.environ.get("COMMIT_MSG","").startswith("Actualizacion"):
+    sys.exit(0)
 
 token = os.environ["TELEGRAM_TOKEN"]
 chat = os.environ.get("TELEGRAM_CHAT_ID", "").strip()

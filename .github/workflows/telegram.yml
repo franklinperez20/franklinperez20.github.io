@@ -13,3 +13,4 @@ jobs:
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: "6989861835"
+          COMMIT_MSG: ${{ github.event.head_commit.message }}

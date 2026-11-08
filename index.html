@@ -81,13 +81,14 @@
 
   <section id="como" class="hide">
     <div class="box">
-      <h3>Qué hace cada mañana (6:4x am, hora de Venezuela)</h3>
+      <h3>Qué hace cada mañana (7:52 am, hora de Venezuela)</h3>
       <ul>
         <li>Revisa NBA, NFL, NHL, MLB, Premier League, LaLiga, Serie A, Bundesliga, Ligue 1, Champions, Europa League, MLS, tenis ATP/WTA (torneos principales) y UFC.</li>
         <li>Toma las probabilidades de modelos (SportRadar) y las cuotas de las casas de apuestas, quita el margen de la casa y se queda con las 10 más altas del día.</li>
         <li>En fútbol usa también la <b>doble oportunidad</b> (gana o empata), que es donde suelen aparecer probabilidades por encima del 80 %.</li>
         <li>Revisa lesiones y bajas de última hora de los favoritos.</li>
-        <li>Actualiza esta página y te manda una notificación al iPhone.</li>
+        <li>Actualiza esta página y te manda los picks por Telegram.</li>
+        <li>Durante el día (12:43, 3:43, 6:43 y 9:43 pm) marca los juegos terminados y, por cada uno, agrega el siguiente partido con mayor probabilidad que aún no haya empezado.</li>
         <li>Excluye todo lo universitario (NCAA) y torneos menores (ITF, UTR, Challengers).</li>
       </ul>
     </div>
@@ -138,24 +139,28 @@ $('resumen').innerHTML = '<h3>Resumen del día</h3>' + D.resumen;
 $('fuentes').textContent = D.fuentes;
 
 const cuota = p => (100/p).toFixed(2);
-$('picks').innerHTML = D.picks.map((p,i)=>{
+const card=(p,i)=>{
   const cls = p.prob >= 80 ? 'hi' : 'mid';
-  return `<div class="pick ${cls}">
-    <div class="rank">${i+1}</div>
-    <div><div class="match">${p.deporte} ${p.partido}</div>
-      <div class="meta">${p.liga} · ${p.hora} (Venezuela)</div>
-      <div class="bet">Apuesta: <b>${p.apuesta}</b></div></div>
+  const est = p.r==='ok'?'<span class="res ok">✔ ACERTADO</span>':p.r==='ko'?'<span class="res ko">✘ FALLADO</span>':p.r==='vivo'?'<span class="res pend">● EN JUEGO</span>':'';
+  return `<div class="pick ${cls}" ${p.r==='ok'||p.r==='ko'?'style="opacity:.6"':''}>
+    <div class="rank">${i}</div>
+    <div><div class="match">${p.deporte} ${p.partido}${p.nuevo?' <span class="res ok">NUEVO</span>':''}</div>
+      <div class="meta">${p.liga} · ${p.hora} (Venezuela)${p.marcador?' · '+p.marcador:''}</div>
+      <div class="bet">Apuesta: <b>${p.apuesta}</b> ${est}</div></div>
     <div class="prob ${cls}"><div class="n">${p.prob.toFixed(1)}%</div><div class="q">cuota justa ${cuota(p.prob)}</div></div>
     <div class="bar"><i style="width:${p.prob}%"></i></div>
     ${p.nota ? `<div class="note">${p.nota}</div>` : ''}
-  </div>`;
-}).join('');
+  </div>`;};
+const act = D.picks.filter(p=>p.r!=='ok'&&p.r!=='ko'), fin = D.picks.filter(p=>p.r==='ok'||p.r==='ko');
+const okH = fin.filter(p=>p.r==='ok').length;
+$('picks').innerHTML = act.map((p,i)=>card(p,i+1)).join('') +
+  (fin.length ? `<div class="box"><h3>Terminados hoy: ${okH} de ${fin.length} acertados</h3></div>` + fin.map((p,i)=>card(p,'✓')).join('') : '');
 
-const all = D.picks.reduce((a,p)=>a*p.prob/100,1);
-const esperados = D.picks.reduce((a,p)=>a+p.prob/100,0);
+const all = act.reduce((a,p)=>a*p.prob/100,1);
+const esperados = act.reduce((a,p)=>a+p.prob/100,0);
 $('combinada').innerHTML = `<h3>⚠️ Ojo con la combinada (parlay)</h3>
-  Probabilidad de que salgan <b>los 10</b> a la vez: <b>${(all*100).toFixed(1)} %</b>.<br>
-  Lo normal es que acierten unos <b>${esperados.toFixed(1)} de 10</b>. Úsalos como apuestas sencillas, no todos juntos.`;
+  Probabilidad de que salgan <b>los ${act.length} pendientes</b> a la vez: <b>${(all*100).toFixed(1)} %</b>.<br>
+  Lo normal es que acierten unos <b>${esperados.toFixed(1)} de ${act.length}</b>. Úsalos como apuestas sencillas, no todos juntos.`;
 
 // Historial
 const H = D.historial || [];
