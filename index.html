@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Robot">
+<meta name="theme-color" content="#0b0f14">
+<link rel="apple-touch-icon" href="icon.png">
+<title>Robot de Probabilidades Deportivas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0b0f14;--card:#131a22;--line:#223040;--txt:#e8eef5;--mut:#8aa0b5;--acc:#22c55e;--warn:#f59e0b;--bad:#ef4444}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font-family:Inter,system-ui,sans-serif;line-height:1.4}
+  .wrap{max-width:680px;margin:0 auto;padding:18px 14px 60px}
+  header h1{font-size:22px;margin:0 0 4px;font-weight:800;letter-spacing:-.02em}
+  header .sub{color:var(--mut);font-size:13px}
+  .badge{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 8px;border-radius:99px;border:1px solid var(--line);color:var(--mut);margin-top:8px}
+  .tabs{display:flex;gap:6px;margin:18px 0 12px}
+  .tabs button{flex:1;background:var(--card);border:1px solid var(--line);color:var(--mut);padding:9px;border-radius:10px;font:600 13px Inter;cursor:pointer}
+  .tabs button.on{color:var(--txt);border-color:var(--acc)}
+  .pick{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:10px;display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center}
+  .rank{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:18px;color:var(--mut);text-align:center}
+  .match{font-weight:600;font-size:15px}
+  .meta{font-size:12px;color:var(--mut);margin-top:2px}
+  .bet{font-size:13px;margin-top:5px}
+  .bet b{color:var(--acc)}
+  .prob{text-align:right}
+  .prob .n{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700}
+  .prob .q{font-size:11px;color:var(--mut)}
+  .hi .n{color:var(--acc)} .mid .n{color:var(--warn)}
+  .bar{grid-column:2/4;height:4px;background:var(--line);border-radius:4px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--acc)}
+  .mid .bar i, .pick.mid .bar i{background:var(--warn)}
+  .note{grid-column:2/4;font-size:12px;color:var(--mut)}
+  .res{font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 7px;border-radius:6px;margin-left:6px}
+  .res.ok{background:#14532d;color:#86efac}.res.ko{background:#450a0a;color:#fca5a5}.res.pend{background:#1e293b;color:var(--mut)}
+  .box{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:14px 0;font-size:14px}
+  .box h3{margin:0 0 8px;font-size:15px}
+  .box.warn{border-color:#5b3a07}
+  .stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+  .stat div{background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:10px;text-align:center}
+  .stat .v{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700}
+  .stat .l{font-size:11px;color:var(--mut)}
+  ul{padding-left:18px;margin:6px 0} li{margin:3px 0}
+  .muted{color:var(--mut);font-size:12px}
+  table{width:100%;border-collapse:collapse;font-size:13px} td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left} th{color:var(--mut);font-weight:600}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🤖 Robot de Probabilidades</h1>
+    <div class="sub" id="fecha"></div>
+    <span class="badge" id="upd"></span>
+  </header>
+
+  <div class="tabs">
+    <button class="on" data-t="hoy">Top 10 de hoy</button>
+    <button data-t="hist">Historial</button>
+    <button data-t="como">Cómo funciona</button>
+  </div>
+
+  <section id="hoy">
+    <div class="box" id="resumen"></div>
+    <div id="picks"></div>
+    <div class="box warn" id="combinada"></div>
+  </section>
+
+  <section id="hist" class="hide">
+    <div class="box">
+      <h3>Rendimiento acumulado</h3>
+      <div class="stat" id="stats"></div>
+      <p class="muted">Cada mañana el robot revisa los resultados del día anterior y los anota aquí. Así sabrás si el 80 % se cumple en la vida real.</p>
+    </div>
+    <div class="box"><table id="histtab"></table></div>
+  </section>
+
+  <section id="como" class="hide">
+    <div class="box">
+      <h3>Qué hace cada mañana (6:4x am, hora de Venezuela)</h3>
+      <ul>
+        <li>Revisa NBA, NFL, NHL, MLB, Premier League, LaLiga, Serie A, Bundesliga, Ligue 1, Champions, Europa League, MLS, tenis ATP/WTA (torneos principales) y UFC.</li>
+        <li>Toma las probabilidades de modelos (SportRadar) y las cuotas de las casas de apuestas, quita el margen de la casa y se queda con las 10 más altas del día.</li>
+        <li>En fútbol usa también la <b>doble oportunidad</b> (gana o empata), que es donde suelen aparecer probabilidades por encima del 80 %.</li>
+        <li>Revisa lesiones y bajas de última hora de los favoritos.</li>
+        <li>Actualiza esta página y te manda una notificación al iPhone.</li>
+        <li>Excluye todo lo universitario (NCAA) y torneos menores (ITF, UTR, Challengers).</li>
+      </ul>
+    </div>
+    <div class="box warn">
+      <h3>Lo que tienes que saber</h3>
+      <ul>
+        <li><b>80 % no es seguro.</b> De cada 10 picks al 80 %, en promedio fallan 2.</li>
+        <li><b>Probabilidad alta = cuota baja.</b> Un 85 % paga cerca de 1.15 (ganas 15 por cada 100). Una sola derrota borra varias victorias.</li>
+        <li><b>No combines los 10.</b> La combinada casi nunca sale (mira el cálculo de abajo en la pestaña de hoy).</li>
+        <li>Apuesta solo lo que estés dispuesto a perder y usa montos fijos pequeños.</li>
+      </ul>
+    </div>
+  </section>
+
+  <p class="muted" id="fuentes"></p>
+</div>
+
+<!-- ====== DATOS: el robot reemplaza SOLO este bloque cada mañana ====== -->
+<script id="data" type="application/json">
+{
+  "fecha": "2026-11-08",
+  "fecha_texto": "Domingo 8 de noviembre de 2026",
+  "actualizado": "2026-11-08 13:10 (hora de Venezuela) · corrida inicial",
+  "resumen": "Hoy hay 4 picks por encima del 80 % (dos en la NBA y dos dobles oportunidades en fútbol). Los otros 6 están entre 73 % y 80 %: los incluyo para completar el top 10, pero tienen más riesgo.",
+  "picks": [
+    {"deporte":"🏀","liga":"NBA","partido":"Milwaukee Bucks vs Boston Celtics","hora":"9:00 pm","apuesta":"Gana Boston Celtics","prob":85.8,"nota":"Boston viene de ganar 119-80 a Charlotte."},
+    {"deporte":"⚽","liga":"LaLiga","partido":"Villarreal vs Getafe","hora":"1:30 pm","apuesta":"Villarreal o empate (1X)","prob":84.7,"nota":"Villarreal gana 63 % + empate 21 %."},
+    {"deporte":"🏀","liga":"NBA","partido":"Minnesota Timberwolves vs Utah Jazz","hora":"8:00 pm","apuesta":"Gana Minnesota","prob":84.7,"nota":"Local muy superior."},
+    {"deporte":"⚽","liga":"Bundesliga","partido":"Hoffenheim vs Schalke 04","hora":"2:30 pm","apuesta":"Hoffenheim o empate (1X)","prob":82.0,"nota":"Hoffenheim gana 61 % + empate 21 %."},
+    {"deporte":"🏈","liga":"NFL","partido":"Kansas City Chiefs vs New York Jets","hora":"2:00 pm","apuesta":"Gana Kansas City","prob":79.8,"nota":"Por debajo del 80 %: riesgo medio."},
+    {"deporte":"🏀","liga":"NBA","partido":"Sacramento Kings vs Miami Heat","hora":"10:00 pm","apuesta":"Gana Miami Heat","prob":79.7,"nota":"Visitante favorito."},
+    {"deporte":"🏈","liga":"NFL","partido":"San Francisco 49ers vs Las Vegas Raiders","hora":"5:25 pm","apuesta":"Gana San Francisco","prob":79.2,"nota":"Por debajo del 80 %: riesgo medio."},
+    {"deporte":"🏀","liga":"NBA","partido":"Chicago Bulls vs Philadelphia 76ers","hora":"4:30 pm","apuesta":"Gana Philadelphia","prob":78.3,"nota":"Visitante favorito."},
+    {"deporte":"⚽","liga":"LaLiga","partido":"Celta de Vigo vs Levante","hora":"1:30 pm","apuesta":"Celta o empate (1X)","prob":78.0,"nota":"Celta gana 52 % + empate 26 %."},
+    {"deporte":"🏈","liga":"NFL","partido":"Miami Dolphins vs Detroit Lions","hora":"2:00 pm","apuesta":"Gana Detroit","prob":73.4,"nota":"El más bajo del top 10."}
+  ],
+  "historial": [],
+  "fuentes": "Probabilidades: modelo de SportRadar (vía datos deportivos en vivo), consultado el 8 nov 2026. Fútbol: probabilidad de doble oportunidad = victoria + empate."
+}
+</script>
+
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const $ = id => document.getElementById(id);
+$('fecha').textContent = D.fecha_texto;
+$('upd').textContent = 'Actualizado: ' + D.actualizado;
+$('resumen').innerHTML = '<h3>Resumen del día</h3>' + D.resumen;
+$('fuentes').textContent = D.fuentes;
+
+const cuota = p => (100/p).toFixed(2);
+$('picks').innerHTML = D.picks.map((p,i)=>{
+  const cls = p.prob >= 80 ? 'hi' : 'mid';
+  return `<div class="pick ${cls}">
+    <div class="rank">${i+1}</div>
+    <div><div class="match">${p.deporte} ${p.partido}</div>
+      <div class="meta">${p.liga} · ${p.hora} (Venezuela)</div>
+      <div class="bet">Apuesta: <b>${p.apuesta}</b></div></div>
+    <div class="prob ${cls}"><div class="n">${p.prob.toFixed(1)}%</div><div class="q">cuota justa ${cuota(p.prob)}</div></div>
+    <div class="bar"><i style="width:${p.prob}%"></i></div>
+    ${p.nota ? `<div class="note">${p.nota}</div>` : ''}
+  </div>`;
+}).join('');
+
+const all = D.picks.reduce((a,p)=>a*p.prob/100,1);
+const esperados = D.picks.reduce((a,p)=>a+p.prob/100,0);
+$('combinada').innerHTML = `<h3>⚠️ Ojo con la combinada (parlay)</h3>
+  Probabilidad de que salgan <b>los 10</b> a la vez: <b>${(all*100).toFixed(1)} %</b>.<br>
+  Lo normal es que acierten unos <b>${esperados.toFixed(1)} de 10</b>. Úsalos como apuestas sencillas, no todos juntos.`;
+
+// Historial
+const H = D.historial || [];
+const ok = H.filter(h=>h.r==='ok').length, ko = H.filter(h=>h.r==='ko').length;
+$('stats').innerHTML = `<div><div class="v">${ok}</div><div class="l">Acertados</div></div>
+  <div><div class="v">${ko}</div><div class="l">Fallados</div></div>
+  <div><div class="v">${ok+ko ? Math.round(ok*100/(ok+ko))+'%' : '—'}</div><div class="l">Acierto real</div></div>`;
+$('histtab').innerHTML = H.length
+  ? '<tr><th>Fecha</th><th>Pick</th><th>Prob.</th><th></th></tr>' + H.slice().reverse().map(h=>`<tr><td>${h.fecha.slice(5)}</td><td>${h.apuesta}</td><td>${h.prob}%</td><td><span class="res ${h.r}">${h.r==='ok'?'✔':h.r==='ko'?'✘':'…'}</span></td></tr>`).join('')
+  : '<tr><td class="muted">Aún no hay resultados. Mañana aparecerán los de hoy.</td></tr>';
+
+// Tabs
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
+  ['hoy','hist','como'].forEach(s=>$(s).classList.toggle('hide',s!==b.dataset.t));
+});
+</script>
+</body>
+</html>
