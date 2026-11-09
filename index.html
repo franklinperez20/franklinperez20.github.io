@@ -6,6 +6,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Robot">
 <meta name="theme-color" content="#0b0f14">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <link rel="apple-touch-icon" href="icon.png">
 <title>Robot de Probabilidades Deportivas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,6 +51,10 @@
   .muted{color:var(--mut);font-size:12px}
   table{width:100%;border-collapse:collapse;font-size:13px} td,th{padding:6px 4px;border-bottom:1px solid var(--line);text-align:left} th{color:var(--mut);font-weight:600}
   .hide{display:none}
+  .refresh{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:12px;background:var(--acc);color:#04130a;border:0;border-radius:12px;padding:12px;font:800 15px Inter;cursor:pointer}
+  .refresh:active{transform:scale(.98)} .refresh.spin span{display:inline-block;animation:g 1s linear infinite}
+  @keyframes g{to{transform:rotate(360deg)}}
+  .viejo{background:#450a0a;border:1px solid #7f1d1d;color:#fecaca;border-radius:12px;padding:10px 12px;margin-top:10px;font-size:13px}
 </style>
 </head>
 <body>
@@ -56,6 +63,8 @@
     <h1>🤖 Robot de Probabilidades</h1>
     <div class="sub" id="fecha"></div>
     <span class="badge" id="upd"></span>
+    <div class="viejo hide" id="viejo"></div>
+    <button class="refresh" id="btnRef"><span>🔄</span> Actualizar página</button>
   </header>
 
   <div class="tabs">
@@ -310,6 +319,17 @@ const D = JSON.parse(document.getElementById('data').textContent);
 const $ = id => document.getElementById(id);
 $('fecha').textContent = D.fecha_texto;
 $('upd').textContent = 'Actualizado: ' + D.actualizado;
+// Botón actualizar: recarga saltándose la caché del teléfono
+const recargar = () => { $('btnRef').classList.add('spin'); location.replace(location.pathname + '?t=' + Date.now()); };
+$('btnRef').onclick = recargar;
+// Fecha de hoy en Venezuela; si la página es de otro día, avisa
+const hoyVE = new Date(Date.now() - 4*3600e3).toISOString().slice(0,10);
+if (D.fecha !== hoyVE) { $('viejo').classList.remove('hide');
+  $('viejo').innerHTML = '⚠️ Estos picks son del <b>' + D.fecha_texto + '</b>, no de hoy. Toca «Actualizar página». Si sigue igual, el robot aún no ha publicado los de hoy.'; }
+// Al volver a abrir la app, revisa sola si hay versión nueva
+document.addEventListener('visibilitychange', () => { if (!document.hidden) {
+  fetch(location.pathname + '?t=' + Date.now(), {cache:'no-store'}).then(r=>r.text()).then(t=>{
+    const m = t.match(/"actualizado":\s*"([^"]*)"/); if (m && m[1] !== D.actualizado) recargar(); }).catch(()=>{}); } });
 $('resumen').innerHTML = '<h3>Resumen del día</h3>' + D.resumen;
 $('fuentes').textContent = D.fuentes;
 
