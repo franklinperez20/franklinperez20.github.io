@@ -1,0 +1,14 @@
+name: Vigilante del robot (aviso si no se actualizo)
+on:
+  schedule:
+    - cron: "37 12 * * *"   # 8:37 am Caracas
+  workflow_dispatch:
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: python3 scripts/vigilante.py
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: "6989861835"
