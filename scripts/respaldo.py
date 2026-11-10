@@ -78,6 +78,8 @@ def moneylines(odds):
     h = (odds.get("homeTeamOdds") or {}).get("moneyLine")
     a = (odds.get("awayTeamOdds") or {}).get("moneyLine")
     d = (odds.get("drawOdds") or {}).get("moneyLine")
+    if isinstance(h, dict): h = (h.get("close") or h.get("open") or {}).get("odds")
+    if isinstance(a, dict): a = (a.get("close") or a.get("open") or {}).get("odds")
     ml = odds.get("moneyline") or {}
     def pick(side):
         s = ml.get(side) or {}
@@ -129,7 +131,7 @@ def main():
         # resultados de ayer (para el historial)
         for ev in eventos(ruta, ayer) + eventos(ruta, dias[0]):
             c = ev["competitions"][0]
-            if c.get("status", {}).get("type", {}).get("completed"):
+            if ((c.get("status") or ev.get("status") or {}).get("type") or {}).get("completed"):
                 for t in c["competitors"]:
                     ganadores_ayer[t["team"]["displayName"]] = (
                         "ok" if t.get("winner") else "ko",
@@ -141,7 +143,9 @@ def main():
                     continue
                 vistos.add(ev["id"])
                 c = ev["competitions"][0]
-                if c.get("status", {}).get("type", {}).get("state") != "pre":
+                if os.environ.get("DEBUG_ODDS") != "hecho" and c.get("odds"):
+                    os.environ["DEBUG_ODDS"] = "hecho"; print("MUESTRA ODDS:", json.dumps(c["odds"][0])[:1500])
+                if ((c.get("status") or ev.get("status") or {}).get("type") or {}).get("state") != "pre":
                     continue
                 ini = datetime.fromisoformat(ev["date"].replace("Z", "+00:00")).astimezone(CCS)
                 if ini.strftime("%Y-%m-%d") != hoy or ini < ahora:
@@ -163,7 +167,7 @@ def main():
                     "partido": f"{local['team']['displayName']} vs {visita['team']['displayName']}",
                     "hora": hora, "apuesta": f"Gana {fav['team']['displayName']}",
                     "prob": round(prob * 100, 1),
-                    "nota": f"Cuota {ml} ({c['odds'][0].get('provider', {}).get('name', 'casa')}), sin margen."
+                    "nota": f"Cuota {ml} ({(c['odds'][0].get('provider') or {}).get('name') or 'casa'}), sin margen."
                             + (" El empate pierde." if es_futbol else ""),
                 })
 
@@ -224,6 +228,7 @@ def main():
 try:
     main()
 except Exception as e:
+    import traceback; traceback.print_exc()
     print("ERROR:", e)
     if not DRY:
         telegram(f"⚠️ El robot NO pudo publicar los picks de hoy ({hoy}).\nMotivo: {e}\n"
