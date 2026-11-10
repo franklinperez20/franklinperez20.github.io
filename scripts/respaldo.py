@@ -143,16 +143,15 @@ def main():
                     continue
                 vistos.add(ev["id"])
                 c = ev["competitions"][0]
-                if os.environ.get("DEBUG_ODDS") != "hecho" and c.get("odds"):
-                    os.environ["DEBUG_ODDS"] = "hecho"; print("MUESTRA ODDS:", json.dumps(c["odds"][0])[:1500])
                 if ((c.get("status") or ev.get("status") or {}).get("type") or {}).get("state") != "pre":
                     continue
                 ini = datetime.fromisoformat(ev["date"].replace("Z", "+00:00")).astimezone(CCS)
                 if ini.strftime("%Y-%m-%d") != hoy or ini < ahora:
                     continue
-                if not c.get("odds"):
+                od = next((o for o in (c.get("odds") or []) if isinstance(o, dict)), None)
+                if not od:
                     continue
-                h, a, d = moneylines(c["odds"][0])
+                h, a, d = moneylines(od)
                 ph, pa = american_a_prob(h), american_a_prob(a)
                 pd = american_a_prob(d) if es_futbol else 0
                 if not ph or not pa or (es_futbol and not pd):
@@ -167,7 +166,7 @@ def main():
                     "partido": f"{local['team']['displayName']} vs {visita['team']['displayName']}",
                     "hora": hora, "apuesta": f"Gana {fav['team']['displayName']}",
                     "prob": round(prob * 100, 1),
-                    "nota": f"Cuota {ml} ({(c['odds'][0].get('provider') or {}).get('name') or 'casa'}), sin margen."
+                    "nota": f"Cuota {ml} ({(od.get('provider') or {}).get('name') or 'casa'}), sin margen."
                             + (" El empate pierde." if es_futbol else ""),
                 })
 
