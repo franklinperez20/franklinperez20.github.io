@@ -1,14 +1,28 @@
-name: Vigilante del robot (aviso si no se actualizo)
+name: Robot de respaldo (publica si el robot de la manana fallo)
 on:
   schedule:
-    - cron: "37 12 * * *"   # 8:37 am Caracas
+    - cron: "17 12 * * *"   # 8:17 am Caracas
+    - cron: "47 12 * * *"   # 8:47 am Caracas
+    - cron: "23 13 * * *"   # 9:23 am Caracas
   workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Solo mostrar (1) o publicar (0)"
+        default: "1"
+      forzar:
+        description: "Rehacer aunque ya haya picks de hoy (1/0)"
+        default: "0"
+permissions:
+  contents: write
+concurrency: robot-respaldo
 jobs:
   revisar:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: python3 scripts/vigilante.py
+      - run: python3 scripts/respaldo.py
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
           TELEGRAM_CHAT_ID: "6989861835"
+          DRY_RUN: ${{ github.event.inputs.dry_run || '0' }}
+          FORZAR: ${{ github.event.inputs.forzar || '0' }}
