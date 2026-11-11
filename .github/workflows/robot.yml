@@ -18,6 +18,9 @@ on:
       forzar:
         description: "Rehacer aunque ya haya picks de hoy (1/0)"
         default: "0"
+      fecha:
+        description: "Solo pruebas: simular otro dia (AAAA-MM-DD)"
+        default: ""
 permissions:
   contents: write
 concurrency: robot-probabilidades
@@ -40,3 +43,4 @@ jobs:
           TELEGRAM_CHAT_ID: "6989861835"
           DRY_RUN: ${{ github.event.inputs.dry_run || '0' }}
           FORZAR: ${{ github.event.inputs.forzar || '0' }}
+          FECHA: ${{ github.event.inputs.fecha || '' }}

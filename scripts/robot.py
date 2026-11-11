@@ -20,6 +20,8 @@ from datetime import datetime, timedelta, timezone
 CCS = timezone(timedelta(hours=-4))
 UTC = timezone.utc
 ahora = datetime.now(CCS)
+if os.environ.get("FECHA"):  # solo para pruebas: simula las 6 am de otro día
+    ahora = datetime.fromisoformat(os.environ["FECHA"] + "T06:00:00-04:00")
 hoy = ahora.strftime("%Y-%m-%d")
 MODO = os.environ.get("MODO", "manana")
 DRY = os.environ.get("DRY_RUN") == "1"
@@ -371,6 +373,12 @@ def precio_kalshi(juego, e, kalshi):
 # ---------------------------------------------------------------- candidatos
 def candidatos(juegos, espn, kalshi, solo_futuros=True):
     lista_c = []
+    de_hoy = [j for j in juegos if j["inicio"].strftime("%Y-%m-%d") == hoy]
+    print(f"Partidos de hoy en Polymarket: {len(de_hoy)} · por empezar: "
+          f"{sum(1 for j in de_hoy if j['inicio'] > ahora and not j['cerrado'])} · con poca liquidez: "
+          f"{sum(1 for j in de_hoy if j['liq'] < MIN_LIQ)}")
+    for j in sorted(de_hoy, key=lambda j: -max(j["pm"].values()))[:40]:
+        print(f"   PM {max(j['pm'].values())*100:5.1f} liq {j['liq']:>9.0f} {j['liga']:<22} {j['local']} vs {j['visita']}")
     for j in juegos:
         if j["inicio"].strftime("%Y-%m-%d") != hoy:
             continue
@@ -393,12 +401,13 @@ def candidatos(juegos, espn, kalshi, solo_futuros=True):
         # si las fuentes no están de acuerdo (más de 12 puntos), se queda con la más baja
         vals = list(fuentes.values())
         prob = min(vals) if max(vals) - min(vals) > 0.12 else sum(vals) / len(vals)
-        nombre_fav = fav
-        if e:  # nombre completo de ESPN si existe
+        nombre_fav, partido = fav, f"{j['local']} vs {j['visita']}"
+        if e:  # nombres completos y local/visitante de ESPN si existe
             nombre_fav = next((n for n in (e["local"], e["visita"]) if mismo_equipo(n, fav)), fav)
+            partido = f"{e['local']} vs {e['visita']}"
         detalle = " · ".join(f"{k} {v*100:.1f} %" for k, v in fuentes.items())
         lista_c.append({
-            "deporte": j["emoji"], "liga": j["liga"], "partido": f"{j['local']} vs {j['visita']}",
+            "deporte": j["emoji"], "liga": j["liga"], "partido": partido,
             "hora": hora_txt(j["inicio"]), "apuesta": f"Gana {nombre_fav}", "prob": round(prob * 100, 1),
             "nota": detalle + (" · El empate pierde." if j["empate"] else "")
                     + (" · ⚠️ las fuentes no coinciden, uso la más baja" if max(vals) - min(vals) > 0.12 else ""),
