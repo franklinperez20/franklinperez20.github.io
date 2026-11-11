@@ -194,6 +194,11 @@ def juego_de_evento(ev, emoji, liga, cod, ordering):
     mls = [m for m in ev.get("markets", []) if m.get("sportsMarketType") == "moneyline"]
     if not mls:
         return None
+    texto = f"{ev.get('title', '')} {ev.get('slug', '')} {(ev.get('description') or '')[:400]}".lower()
+    if re.search(r"challenger|\bitf\b|\butr\b|wta 125|\bu-?\d\d\b|youth|junior|reserves", texto):
+        return None  # torneos menores, juveniles y reservas fuera
+    if emoji != "🎾" and re.search(r"women's|\bwomen\b|femenin", texto):
+        return None
     inicio = parse_dt(ev.get("startTime") or mls[0].get("gameStartTime") or ev.get("endDate"))
     if not inicio:
         return None
@@ -584,7 +589,7 @@ def modo_actualizar():
             cambios = True
             if r in ("ok", "ko"):
                 terminados += 1
-                lineas.append(f"{'✔' if r == 'ok' else '✘'} {p['apuesta']} ({marc})")
+                lineas.append(f"{'✔' if r == 'ok' else '✘'} {p['apuesta']} · {marc}")
             elif p.get("r") != "vivo":
                 lineas.append(f"⏳ {p['apuesta']} (en juego)")
             p["r"], p["marcador"] = r, marc

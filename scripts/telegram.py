@@ -4,7 +4,7 @@ html = open("index.html", encoding="utf-8").read()
 m = re.search(r'<script id="data" type="application/json">(.*?)</script>', html, re.S)
 D = json.loads(m.group(1))
 
-lines = [f"🤖 *Top 10 de hoy* – {D['fecha_texto']}", ""]
+lines = [f"🤖 *Ganadores de hoy* – {D['fecha_texto']}", "_Solo ganador · todos están en Polymarket_", ""]
 for i, p in enumerate(D["picks"], 1):
     marca = "🟢" if p["prob"] >= 80 else "🟡"
     lines.append(f"{i}. {p['deporte']} {p['apuesta']} – *{p['prob']:.1f}%* {marca}")

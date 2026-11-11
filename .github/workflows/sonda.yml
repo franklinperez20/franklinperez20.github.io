@@ -1,8 +1,0 @@
-name: Sonda de fuentes
-on: workflow_dispatch
-jobs:
-  s:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: python3 scripts/sonda.py
