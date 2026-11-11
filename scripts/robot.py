@@ -162,25 +162,30 @@ def precio_si(m):
 def polymarket_juegos(incluir_cerrados=False):
     deportes = {s["sport"]: s for s in get_json("https://gamma-api.polymarket.com/sports")}
     desde = (ahora - timedelta(days=1)).astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-    hasta = (ahora + timedelta(days=3)).astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
-    juegos, vistos_series = [], set()
+    hasta = (ahora + timedelta(days=12)).astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    juegos, vistos_series, vistos = [], set(), set()
     for cod, (emoji, liga) in LIGAS_PM.items():
         s = deportes.get(cod)
         if not s or not s.get("series") or s["series"] in vistos_series:
             continue
         vistos_series.add(s["series"])
-        params = {"series_id": s["series"], "limit": 300, "end_date_min": desde, "end_date_max": hasta}
-        if not incluir_cerrados:
-            params["closed"] = "false"
-        try:
-            eventos = get_json("https://gamma-api.polymarket.com/events?" + urllib.parse.urlencode(params))
-        except Exception as e:
-            print("  Polymarket sin datos", cod, e)
-            continue
-        for ev in eventos:
-            j = juego_de_evento(ev, emoji, liga, cod, s.get("ordering") or "home")
-            if j:
-                juegos.append(j)
+        estados = ["false", "true"] if incluir_cerrados else ["false"]
+        for cerrado in estados:
+            for pagina in range(6):
+                params = {"series_id": s["series"], "limit": 500, "offset": 500 * pagina, "closed": cerrado,
+                          "end_date_min": desde, "end_date_max": hasta}
+                try:
+                    eventos = get_json("https://gamma-api.polymarket.com/events?" + urllib.parse.urlencode(params))
+                except Exception as e:
+                    print("  Polymarket sin datos", cod, e)
+                    break
+                for ev in eventos:
+                    j = juego_de_evento(ev, emoji, liga, cod, s.get("ordering") or "home")
+                    if j and j["slug"] not in vistos:
+                        vistos.add(j["slug"])
+                        juegos.append(j)
+                if len(eventos) < 500:
+                    break
     print(f"Polymarket: {len(juegos)} partidos con mercado de ganador")
     return juegos
 
@@ -243,7 +248,7 @@ def juego_de_evento(ev, emoji, liga, cod, ordering):
     return {
         "emoji": emoji, "liga": liga, "cod": cod, "slug": ev.get("slug"), "inicio": inicio,
         "local": local, "visita": visita, "equipos": equipos, "pm": probs, "empate": empate is not None,
-        "liq": liq, "cerrado": bool(ev.get("closed")) or all(m.get("closed") for m in mls), "ganador": ganador,
+        "liq": liq, "cerrado": bool(ev.get("closed")) or bool(ev.get("ended")) or all(m.get("closed") for m in mls), "ganador": ganador,
         "vivo": bool(ev.get("live")), "marcador": ev.get("score") or "", "periodo": ev.get("period") or "",
         "fuentes": {},
     }
