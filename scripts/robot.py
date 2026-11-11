@@ -462,8 +462,6 @@ def _resultado(p, por_slug, espn):
                (mismo_equipo(nombre, x["local"]) or mismo_equipo(nombre, x["visita"])):
                 e = x
                 break
-    if DRY:
-        print("    pm:", j and (j["slug"], j["cerrado"], j["ganador"], j["vivo"], j["marcador"], j["periodo"]), "| espn:", e and (e["local"], e["estado"], e["marcador"]))
     if e and e["terminado"]:
         gano = e["ganador"] and mismo_equipo(e["ganador"], p["apuesta"].replace("Gana ", "", 1))
         return ("ok" if gano else "ko"), f"Final {e['marcador']}"
@@ -472,8 +470,17 @@ def _resultado(p, por_slug, espn):
         return ("ok" if gano else "ko"), (f"Final {j['marcador']}" if j["marcador"] else "Final")
     if e and e["estado"] == "in":
         return "vivo", f"En juego · {e['detalle']} {e['marcador']}".strip()
-    if j and j["vivo"]:
-        return "vivo", f"En juego {j['marcador']}".strip()
+    if j and j["inicio"] <= ahora:
+        # Polymarket ya decidido (precio de 97 ¢ o más) después de la duración normal del partido
+        dur = {"⚽": 2.1, "🏀": 2.3, "🏒": 2.6, "⚾": 3.2, "🏈": 3.3, "🎾": 2.5}.get(j["emoji"], 3.0)
+        pq = next((v for k, v in j["pm"].items() if mismo_equipo(k, eq)), None)
+        if pq is not None and ahora >= j["inicio"] + timedelta(hours=dur):
+            fin = f"Final {j['marcador']}" if j["marcador"] else "Final (resultado según Polymarket)"
+            if pq >= 0.97:
+                return "ok", fin
+            if pq <= 0.03:
+                return "ko", fin
+        return "vivo", f"En juego {j['marcador']}".strip() if j["marcador"] else "En juego"
     return None, None
 
 
