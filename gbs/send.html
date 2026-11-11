@@ -1,0 +1,4 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>send</title></head><body><p id="s">sending...</p><script>
+(async()=>{const n=location.hash.slice(1);const b=await (await fetch(n+'.jpg')).arrayBuffer();
+if(window.opener){window.opener.postMessage({gbs:n,buf:b},'*');document.getElementById('s').textContent='sent '+b.byteLength;setTimeout(()=>window.close(),1500)}else{document.getElementById('s').textContent='no opener'}})();
+</script></body></html>
