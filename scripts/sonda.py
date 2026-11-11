@@ -2,22 +2,21 @@ import json, urllib.request
 def g(u):
     r=urllib.request.Request(u,headers={"User-Agent":"Mozilla/5.0","Accept":"application/json"})
     with urllib.request.urlopen(r,timeout=30) as f: return json.load(f)
-def show(t,u,fn):
-    print("=====",t,u)
-    try: fn(g(u))
-    except Exception as e: print("ERR",e)
-show("pm sports","https://gamma-api.polymarket.com/sports",lambda d:print(json.dumps(d)[:3000]))
-def ev(d):
-    print(len(d))
-    for e in d[:40]:
-        print(e.get("slug"),"|",e.get("title"),"|",e.get("startTime") or e.get("startDate"),"|",[ (m.get("question"),m.get("outcomes"),m.get("outcomePrices"),m.get("sportsMarketType")) for m in e.get("markets",[])[:3]])
-show("pm events games","https://gamma-api.polymarket.com/events?closed=false&tag_slug=games&limit=100&order=startDate&ascending=true&end_date_min=2026-11-11",ev)
-show("pm events nba","https://gamma-api.polymarket.com/events?closed=false&series_id=10345&limit=20",ev)
-show("pm search","https://gamma-api.polymarket.com/public-search?q=Real%20Madrid&limit_per_type=3&events_status=active",lambda d:print(json.dumps(d)[:2500]))
-def ks(d):
-    ms=d.get("markets",[]); print(len(ms), d.get("cursor"))
-    for m in ms[:30]: print(m.get("ticker"),"|",m.get("title"),"|",m.get("yes_sub_title"),m.get("last_price"),m.get("yes_bid"),m.get("yes_ask"),m.get("close_time"))
-show("kalshi","https://api.elections.kalshi.com/trade-api/v2/markets?status=open&limit=100&series_ticker=KXNBAGAME",ks)
-show("kalshi series","https://api.elections.kalshi.com/trade-api/v2/series?category=Sports",lambda d:print([s.get("ticker") for s in d.get("series",[])][:400]))
-show("espn euroleague","https://site.api.espn.com/apis/site/v2/sports/basketball/euroleague/scoreboard",lambda d:print(len(d.get("events",[]))))
-show("espn tennis","https://site.api.espn.com/apis/site/v2/sports/tennis/atp/scoreboard",lambda d:print(len(d.get("events",[]))))
+d=g("https://gamma-api.polymarket.com/sports")
+print("NSPORTS",len(d))
+for s in d: print("S|",s.get("id"),"|",s.get("sport"),"|",s.get("name"),"|",s.get("series"),"|",s.get("tags"))
+for sid in ["10188","10204"]:
+    try:
+        ev=g(f"https://gamma-api.polymarket.com/events?series_id={sid}&closed=false&limit=5")
+        for e in ev[:3]:
+            print("E|",sid,e.get("slug"),e.get("startTime"),e.get("title"))
+            for m in e.get("markets",[]): 
+                if m.get("sportsMarketType")=="moneyline": print("   M|",m.get("question"),m.get("outcomes"),m.get("outcomePrices"),m.get("groupItemTitle"),m.get("bestBid"),m.get("bestAsk"),m.get("lastTradePrice"),m.get("acceptingOrders"),m.get("gameStartTime"))
+    except Exception as ex: print("ERR",sid,ex)
+k=g("https://api.elections.kalshi.com/trade-api/v2/markets?status=open&limit=2&series_ticker=KXNBAGAME")
+print("KALSHI",json.dumps(k["markets"][0])[:1500])
+for p in ["basketball/euroleague","tennis/atp","soccer/uefa.champions","basketball/nba"]:
+    try:
+        x=g(f"https://site.api.espn.com/apis/site/v2/sports/{p}/scoreboard")
+        evs=x.get("events",[]); print("ESPN",p,len(evs), json.dumps((evs[0]["competitions"][0].get("odds") or [None])[0])[:300] if evs else "")
+    except Exception as ex: print("ESPN ERR",p,ex)
