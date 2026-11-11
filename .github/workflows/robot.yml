@@ -1,0 +1,42 @@
+name: Robot de probabilidades (automatico)
+on:
+  schedule:
+    - cron: "7 10 * * *"     # 6:07 am Caracas  - lista del dia
+    - cron: "37 10 * * *"    # 6:37 am Caracas  - reintento
+    - cron: "9 11 * * *"     # 7:09 am Caracas  - reintento
+    - cron: "41 11 * * *"    # 7:41 am Caracas  - reintento
+    - cron: "13 15-23 * * *" # cada hora 11:13 am - 7:13 pm Caracas - resultados y nuevos picks
+    - cron: "13 0-4 * * *"   # cada hora 8:13 pm - 12:13 am Caracas
+  workflow_dispatch:
+    inputs:
+      modo:
+        description: "manana o actualizar"
+        default: "manana"
+      dry_run:
+        description: "Solo mostrar (1) o publicar (0)"
+        default: "1"
+      forzar:
+        description: "Rehacer aunque ya haya picks de hoy (1/0)"
+        default: "0"
+permissions:
+  contents: write
+concurrency: robot-probabilidades
+jobs:
+  robot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Elegir modo
+        id: m
+        run: |
+          if [ -n "${{ github.event.inputs.modo }}" ]; then echo "modo=${{ github.event.inputs.modo }}" >> $GITHUB_OUTPUT;
+          elif [ "$(date -u +%H)" -ge 10 ] && [ "$(date -u +%H)" -le 13 ]; then echo "modo=manana" >> $GITHUB_OUTPUT;
+          else echo "modo=actualizar" >> $GITHUB_OUTPUT; fi
+      - run: python3 scripts/robot.py
+        env:
+          MODO: ${{ steps.m.outputs.modo }}
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: "6989861835"
+          DRY_RUN: ${{ github.event.inputs.dry_run || '0' }}
+          FORZAR: ${{ github.event.inputs.forzar || '0' }}
