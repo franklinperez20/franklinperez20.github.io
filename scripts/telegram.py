@@ -1,5 +1,9 @@
 import json, os, re, sys, urllib.request, urllib.parse
 
+_msg = os.environ.get("COMMIT_MSG", "")
+if not (_msg.startswith("Picks del") or _msg.startswith("Actualizacion") or os.environ.get("GITHUB_EVENT_NAME") == "workflow_dispatch"):
+    sys.exit(0)  # cambios de diseño u otros commits no mandan Telegram
+
 html = open("index.html", encoding="utf-8").read()
 m = re.search(r'<script id="data" type="application/json">(.*?)</script>', html, re.S)
 D = json.loads(m.group(1))
