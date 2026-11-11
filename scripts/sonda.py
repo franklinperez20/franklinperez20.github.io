@@ -20,3 +20,11 @@ for p in ["basketball/euroleague","tennis/atp","soccer/uefa.champions","basketba
         x=g(f"https://site.api.espn.com/apis/site/v2/sports/{p}/scoreboard")
         evs=x.get("events",[]); print("ESPN",p,len(evs), json.dumps((evs[0]["competitions"][0].get("odds") or [None])[0])[:300] if evs else "")
     except Exception as ex: print("ESPN ERR",p,ex)
+print("==== closed test")
+for q in ["closed=true","closed=false",""]:
+    ev=g(f"https://gamma-api.polymarket.com/events?series_id=10345&limit=5&end_date_min=2026-11-11T00:00:00Z&end_date_max=2026-11-12T00:00:00Z&{q}")
+    print(q,len(ev),[ (e['slug'],e.get('closed'),e.get('live'),e.get('score'),e.get('period'),e.get('ended')) for e in ev])
+ev=g("https://gamma-api.polymarket.com/events?slug=bkeurocup-bah-lie-2026-11-11")
+print("slug",json.dumps(ev)[:800])
+ev=g("https://gamma-api.polymarket.com/public-search?q=Bahcesehir&limit_per_type=5&events_status=closed")
+print("srch",[(e['slug'],e.get('closed'),e.get('score'),e.get('endDate')) for e in ev.get('events',[])])

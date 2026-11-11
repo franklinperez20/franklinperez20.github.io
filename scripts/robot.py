@@ -434,6 +434,11 @@ def elegir(cands, ya=()):
 # ---------------------------------------------------------------- resultados
 def resultado(p, por_slug, espn):
     """Devuelve (r, marcador) con r en ok/ko/vivo/None."""
+    r = _resultado(p, por_slug, espn)
+    return r
+
+
+def _resultado(p, por_slug, espn):
     j = por_slug.get(p.get("pm"))
     eq = p.get("pm_eq") or p["apuesta"].replace("Gana ", "", 1)
     if not j:  # picks puestos a mano: buscar el partido en Polymarket por nombre y fecha
@@ -452,6 +457,8 @@ def resultado(p, por_slug, espn):
                (mismo_equipo(nombre, x["local"]) or mismo_equipo(nombre, x["visita"])):
                 e = x
                 break
+    if DRY:
+        print("    pm:", j and (j["slug"], j["cerrado"], j["ganador"], j["vivo"], j["marcador"], j["periodo"]), "| espn:", e and (e["local"], e["estado"], e["marcador"]))
     if e and e["terminado"]:
         gano = e["ganador"] and mismo_equipo(e["ganador"], p["apuesta"].replace("Gana ", "", 1))
         return ("ok" if gano else "ko"), f"Final {e['marcador']}"
@@ -560,6 +567,7 @@ def modo_actualizar():
         if p.get("r") in ("ok", "ko"):
             continue
         r, marc = resultado(p, por_slug, espn)
+        print("  pick:", p["apuesta"], "->", r, marc)
         if r and (r != p.get("r") or marc != p.get("marcador")):
             cambios = True
             if r in ("ok", "ko"):
