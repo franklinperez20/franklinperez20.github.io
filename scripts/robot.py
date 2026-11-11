@@ -83,6 +83,19 @@ LIGAS_PM = {  # código Polymarket: (emoji, nombre que se muestra)
     "vbcl": (V, "Champions de voleibol"), "vbplusliga": (V, "PlusLiga"), "vbsuperlega": (V, "SuperLega"),
     "afl": ("🏉", "AFL"),
 }
+TORNEOS_TENIS = (  # torneos ATP/WTA de nivel 250 o superior
+    "australian open", "roland", "french open", "wimbledon", "us open", "atp finals", "wta finals", "nitto", "turin", "riyadh",
+    "indian wells", "miami", "monte carlo", "monte-carlo", "madrid", "rome", "roma", "internazionali", "canada", "montreal",
+    "toronto", "cincinnati", "shanghai", "paris", "doha", "dubai", "beijing", "wuhan", "tokyo", "guadalajara", "ningbo",
+    "rotterdam", "acapulco", "barcelona", "queen", "halle", "hamburg", "washington", "basel", "vienna", "rio", "buenos aires",
+    "santiago", "delray", "dallas", "marseille", "montpellier", "los cabos", "estoril", "houston", "marrakech", "bucharest",
+    "munich", "geneva", "lyon", "stuttgart", "hertogenbosch", "mallorca", "eastbourne", "newport", "bastad", "gstaad", "umag",
+    "kitzbuhel", "atlanta", "winston", "chengdu", "hangzhou", "zhuhai", "astana", "almaty", "antwerp", "stockholm", "metz",
+    "belgrade", "athens", "adelaide", "brisbane", "auckland", "hong kong", "united cup", "abu dhabi", "linz", "charleston",
+    "bogota", "rabat", "strasbourg", "berlin", "bad homburg", "nottingham", "birmingham", "palermo", "prague", "cleveland",
+    "monterrey", "seoul", "osaka", "jiujiang", "guangzhou", "hua hin", "merida", "austin", "san diego", "parma", "budapest",
+    "hobart", "cluj", "transylvania", "singapore", "lausanne", "iasi", "davis", "billie jean", "laver", "san jose",
+)
 TRES_VIAS = {e for e in ("⚽",)}  # deportes con empate posible (el empate pierde)
 
 ESPN = [  # rutas ESPN con cuotas DraftKings (para contrastar)
@@ -197,6 +210,10 @@ def juego_de_evento(ev, emoji, liga, cod, ordering):
     texto = f"{ev.get('title', '')} {ev.get('slug', '')} {(ev.get('description') or '')[:400]}".lower()
     if re.search(r"challenger|\bitf\b|\butr\b|wta 125|\bu-?\d\d\b|youth|junior|reserves", texto):
         return None  # torneos menores, juveniles y reservas fuera
+    if emoji == "🎾" and cod in ("atp", "wta"):
+        torneo = (ev.get("title") or "").split(":")[0].lower() if ":" in (ev.get("title") or "") else ""
+        if torneo and not any(t in torneo for t in TORNEOS_TENIS):
+            return None  # Challengers, ITF y WTA 125 fuera: solo torneos ATP/WTA 250 o más
     if emoji != "🎾" and re.search(r"women's|\bwomen\b|femenin", texto):
         return None
     inicio = parse_dt(ev.get("startTime") or mls[0].get("gameStartTime") or ev.get("endDate"))
