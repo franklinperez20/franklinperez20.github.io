@@ -193,7 +193,8 @@ def juego_de_evento(ev, emoji, liga, cod, ordering):
     if not inicio:
         return None
     titulo = ev.get("title") or ""
-    partes = [p.strip() for p in re.split(r"\s+vs\.?\s+", titulo, maxsplit=1)]
+    titulo = re.sub(r"^[A-Za-z]{2,5}:\s*", "", titulo)
+    partes = [re.sub(r"^[A-Za-z]{2,5}:\s*", "", p.strip()) for p in re.split(r"\s+vs\.?\s+", titulo, maxsplit=1)]
     if len(partes) != 2:
         return None
     probs, empate = {}, None
@@ -435,6 +436,12 @@ def resultado(p, por_slug, espn):
     """Devuelve (r, marcador) con r en ok/ko/vivo/None."""
     j = por_slug.get(p.get("pm"))
     eq = p.get("pm_eq") or p["apuesta"].replace("Gana ", "", 1)
+    if not j:  # picks puestos a mano: buscar el partido en Polymarket por nombre y fecha
+        for x in por_slug.values():
+            if x["inicio"].strftime("%Y-%m-%d") == p.get("_fecha", hoy) and any(mismo_equipo(eq, t) for t in (x["local"], x["visita"])):
+                j = x
+                eq = next((t for t in x["pm"] if mismo_equipo(t, eq)), eq)
+                break
     e = None
     if j:
         e = emparejar_espn(j, espn)
