@@ -325,7 +325,7 @@ def espn_juegos():
                      "estado": st.get("state"), "terminado": st.get("completed"), "detalle": st.get("shortDetail", ""),
                      "marcador": f"{local.get('score', '')}-{visita.get('score', '')}",
                      "ganador": next((t["team"].get("displayName") for t in comp if t.get("winner")), None),
-                     "dk": None, "ruta": ruta}
+                     "dk": None, "ruta": ruta, "id": str(ev.get("id") or "")}
                 od = next((o for o in (c.get("odds") or []) if isinstance(o, dict)), None)
                 if od:
                     ph, pa = american_a_prob(ml_de(od, "home")), american_a_prob(ml_de(od, "away"))
@@ -440,6 +440,8 @@ def candidatos(juegos, espn, kalshi, solo_futuros=True):
             "nota": detalle + (" · El empate pierde." if j["empate"] else "")
                     + (" · ⚠️ las fuentes no coinciden, uso la más baja" if max(vals) - min(vals) > 0.12 else ""),
             "pm": j["slug"], "pm_eq": fav, "inicio": j["inicio"].isoformat(), "n_fuentes": len(fuentes),
+            # para el seguimiento en vivo de la página (segunda fuente si Polymarket no carga en el teléfono)
+            "espn": f"{e['ruta']}|{e['id']}|{e['local']}|{e['visita']}" if e and e.get("id") else "",
         })
     # ante empate de probabilidad, primero el que tiene más fuentes
     lista_c.sort(key=lambda p: (-p["prob"], -p["n_fuentes"]))

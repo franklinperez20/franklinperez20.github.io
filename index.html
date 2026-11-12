@@ -159,7 +159,8 @@
    "nota": "Polymarket 88.9 % · DraftKings 86.2 % · El empate pierde.",
    "pm": "cdr-cdta-lev-2026-10-28",
    "pm_eq": "Levante UD",
-   "inicio": "2026-11-12T14:00:00-04:00"
+   "inicio": "2026-11-12T14:00:00-04:00",
+   "espn": "soccer/esp.copa_del_rey|401928527|CD Tarancon|Levante"
   },
   {
    "deporte": "⚽",
@@ -171,7 +172,8 @@
    "nota": "Polymarket 88.1 % · DraftKings 85.4 % · El empate pierde.",
    "pm": "cdr-nav-bet-2026-10-28",
    "pm_eq": "Real Betis Balompié",
-   "inicio": "2026-11-12T14:00:00-04:00"
+   "inicio": "2026-11-12T14:00:00-04:00",
+   "espn": "soccer/esp.copa_del_rey|401928551|CD Artistico Navalcarnero|Real Betis"
   },
   {
    "deporte": "⚽",
@@ -183,7 +185,8 @@
    "nota": "Polymarket 86.8 % · El empate pierde.",
    "pm": "unl-smr-bela-2026-11-12",
    "pm_eq": "Belarus",
-   "inicio": "2026-11-12T15:45:00-04:00"
+   "inicio": "2026-11-12T15:45:00-04:00",
+   "espn": "soccer/uefa.nations|401861149|San Marino|Belarus"
   },
   {
    "deporte": "🏀",
@@ -207,7 +210,8 @@
    "nota": "Polymarket 83.4 % · El empate pierde.",
    "pm": "cde-cha-gre-2026-11-12",
    "pm_eq": "Grenoble Foot 38",
-   "inicio": "2026-11-12T14:00:00-04:00"
+   "inicio": "2026-11-12T14:00:00-04:00",
+   "espn": "soccer/fra.coupe_de_france|401932846|Chambéry Savoie|Grenoble"
   }
  ],
  "historial": [
@@ -575,6 +579,11 @@ function precioEquipo(ev, eq){
 
 // Devuelve {txt, falta} con el periodo legible y los minutos de juego que quedan (aprox.)
 function reloj(p, ev){
+  const r = reloj0(p, ev);
+  if (ev._fuente==='ESPN' && ev._det) r.txt = ev._det.replace(/^Halftime$/i,'Descanso').replace(/^Final.*$/i,'Final');
+  return r;
+}
+function reloj0(p, ev){
   const per = (ev.period||'').toUpperCase(), el = String(ev.elapsed||'');
   const min = parseInt(el,10), mmss = el.match(/^(\d{1,2}):(\d{2})$/);
   if (p.deporte === '⚽'){
@@ -637,27 +646,101 @@ function pintarVivo(){
     } else if (ini && ahora < ini){
       html = `<div class="l1"><span>⏳ Empieza en <b>${enMin((ini-ahora)/60e3)}</b></span><span class="muted">termina aprox. ${horaTxt(finEst)}</span></div>
               ${probAhora?`<div class="l2"><span></span>${probAhora}</div>`:''}`;
+    } else if (ini && ahora < finEst){
+      // Sin datos en vivo: al menos mostrar que está en juego y cuándo termina aprox.
+      enJuego++;
+      cls = 'envivo';
+      html = `<div class="l1"><span><span class="dot"></span><b>EN JUEGO</b> · empezó ${horaTxt(ini)}</span><span class="muted">${p.marcador||'sin marcador todavía'}</span></div>
+              <div class="l2"><span>Termina aprox. ${horaTxt(finEst)} (faltan ~${enMin((finEst-ahora)/60e3)})</span><span class="muted">${ultimaConsulta?'sin datos en vivo de este partido':'cargando datos en vivo…'}</span></div>
+              <div class="tb"><i style="width:${Math.min(100,Math.max(3,100*(ahora-ini)/(finEst-ini)))}%"></i></div>`;
     } else if (ini){
-      html = `<div class="l1"><span>⌛ Debió empezar a las ${horaTxt(ini)}</span><span class="muted">esperando datos en vivo</span></div>${probAhora?`<div class="l2"><span></span>${probAhora}</div>`:''}`;
+      html = `<div class="l1"><span>⌛ Ya debió terminar (${horaTxt(finEst)})</span><span class="muted">${p.marcador||'esperando resultado'}</span></div>`;
     }
     box.className = 'live' + (html?' on ':' ') + cls;
     box.innerHTML = html;
   });
   const h = $('vivohdr');
-  h.classList.toggle('on', !!ultimaConsulta);
+  h.classList.add('on');
   h.innerHTML = (enJuego ? `<span class="dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad);margin-right:5px"></span><b>${enJuego} partido${enJuego>1?'s':''} en vivo</b> · ` : '')
-    + `En vivo actualizado ${horaTxt(new Date(ultimaConsulta||Date.now()))} · se refresca solo cada minuto`;
+    + `actualizado ${horaTxt(new Date(ultimaConsulta||Date.now()))} · se refresca solo cada minuto<br><span style="font-size:11px">Fuente: ${estadoFuente||'conectando…'}</span>`;
 }
 
+// Pide una URL con límite de tiempo (los datos móviles a veces se quedan colgados)
+async function pedir(url, ms=12000){
+  const c = ('AbortController' in window) ? new AbortController() : null;
+  const t = c ? setTimeout(()=>c.abort(), ms) : null;
+  try {
+    const r = await fetch(url, {cache:'no-store', signal: c ? c.signal : undefined});
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    return await r.json();
+  } finally { if (t) clearTimeout(t); }
+}
+
+// Fuente 1: Polymarket (marcador + probabilidad en tiempo real). Una sola consulta para todos.
+async function desdePolymarket(ps){
+  const url = 'https://gamma-api.polymarket.com/events?' + ps.map(p=>'slug='+encodeURIComponent(p.pm)).join('&') + '&_=' + Date.now();
+  let ultimoError;
+  for (let i=0;i<2;i++){
+    try {
+      const j = await pedir(url);
+      if (!Array.isArray(j)) throw new Error('respuesta inválida');
+      j.forEach(e => { if (e && e.slug) VIVO[e.slug] = Object.assign(e, {_fuente:'Polymarket'}); });
+      return j.length;
+    } catch(e){ ultimoError = e; }
+  }
+  throw ultimoError;
+}
+
+// Fuente 2: ESPN (marcador y reloj; sin probabilidad). Se usa si Polymarket no carga.
+const ESPN_DATOS = {};
+async function desdeESPN(ps){
+  const conEspn = ps.filter(p=>p.espn);
+  const rutas = [...new Set(conEspn.map(p=>p.espn.split('|')[0]))];
+  let n = 0;
+  await Promise.all(rutas.map(async ruta=>{
+    const dias = [...new Set(conEspn.filter(p=>p.espn.startsWith(ruta+'|')).map(p=>new Date(p.inicio).toISOString().slice(0,10).replace(/-/g,'')))];
+    for (const d of dias){
+      const j = await pedir(`https://site.api.espn.com/apis/site/v2/sports/${ruta}/scoreboard?dates=${d}`);
+      (j.events||[]).forEach(ev => { ESPN_DATOS[ruta+'|'+ev.id] = ev; });
+    }
+  }));
+  conEspn.forEach(p=>{
+    const [ruta,id] = p.espn.split('|'); const ev = ESPN_DATOS[ruta+'|'+id]; if (!ev) return;
+    const c = (ev.competitions||[{}])[0], st = (c.status||ev.status||{}), ty = st.type||{};
+    const home = (c.competitors||[]).find(t=>t.homeAway==='home'), away = (c.competitors||[]).find(t=>t.homeAway==='away');
+    const per = st.period||0, clk = st.displayClock||'', det = ty.shortDetail||'';
+    let period = '', elapsed = '';
+    if (p.deporte==='⚽'){ period = /HT|Half/i.test(det)?'HT':/Pen/i.test(det)?'PEN':per>2?'ET':per===2?'2H':'1H'; elapsed = String(parseInt(clk,10)||''); }
+    else if (p.deporte==='🏀'){ period = per>4?'OT':'Q'+per; elapsed = clk; }
+    else if (p.deporte==='🏒'){ period = per>3?'OT':'P'+per; elapsed = clk; }
+    else { period = det; }
+    // si Polymarket ya dio datos frescos, no los pisa (solo agrega lo que falte)
+    if (VIVO[p.pm] && VIVO[p.pm]._fuente==='Polymarket' && VIVO[p.pm]._t === ultimoOkPM && VIVO[p.pm].score) return;
+    VIVO[p.pm] = Object.assign({}, VIVO[p.pm]||{}, {
+      _fuente:'ESPN', live: ty.state==='in', ended: !!ty.completed, closed: !!ty.completed,
+      score: home && away ? `${home.score}-${away.score}` : '', period, elapsed, _det: det,
+    });
+    n++;
+  });
+  return n;
+}
+
+let ultimoOkPM = 0, estadoFuente = '';
 async function consultarVivo(){
   if (document.hidden) return;
   const ps = D.picks.filter(p=>p.pm);
-  await Promise.all(ps.map(async p=>{
-    try {
-      const r = await fetch('https://gamma-api.polymarket.com/events?slug='+encodeURIComponent(p.pm)+'&_='+Date.now(), {cache:'no-store'});
-      const j = await r.json(); if (j && j[0]) VIVO[p.pm] = j[0];
-    } catch(_) {}
-  }));
+  if (!ps.length) return;
+  let okPM = false, errPM = '';
+  try { await desdePolymarket(ps); okPM = true; ultimoOkPM = Date.now();
+        Object.values(VIVO).forEach(e=>{ if (e._fuente==='Polymarket') e._t = ultimoOkPM; }); }
+  catch(e){ errPM = (e && e.name==='AbortError') ? 'tardó demasiado' : (e && e.message) || 'sin conexión'; }
+  // ESPN siempre como respaldo si Polymarket falla; si funciona, solo para los que Polymarket no trae marcador
+  let okESPN = false;
+  if (!okPM || ps.some(p=>!VIVO[p.pm] || (!VIVO[p.pm].score && p.espn))){
+    try { okESPN = (await desdeESPN(okPM ? ps.filter(p=>!VIVO[p.pm] || !VIVO[p.pm].score) : ps)) > 0; } catch(_) {}
+  }
+  estadoFuente = okPM ? '✅ Polymarket' : okESPN ? `⚠️ Polymarket no responde en este teléfono (${errPM}) · usando ESPN` :
+                 `❌ No pude conectar con Polymarket (${errPM}) ni con ESPN. Revisa tu conexión; reintento en 1 min.`;
   ultimaConsulta = Date.now();
   pintarVivo();
 }
