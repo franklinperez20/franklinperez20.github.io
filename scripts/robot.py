@@ -486,6 +486,13 @@ def _resultado(p, por_slug, espn):
                 break
     if e and e["terminado"]:
         gano = e["ganador"] and mismo_equipo(e["ganador"], p["apuesta"].replace("Gana ", "", 1))
+        # Fútbol: el pick es a 90 minutos (el empate pierde). Si hubo prórroga/penaltis, manda Polymarket.
+        if j and j.get("emoji") == "⚽":
+            pq = next((v for k, v in j["pm"].items() if mismo_equipo(k, eq)), None)
+            if pq is not None and pq <= 0.03:
+                gano = False
+            elif pq is not None and pq >= 0.97:
+                gano = True
         return ("ok" if gano else "ko"), f"Final {e['marcador']}"
     if j and j["cerrado"] and j["ganador"]:
         gano = j["ganador"] != "__empate__" and mismo_equipo(j["ganador"], eq)

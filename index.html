@@ -54,6 +54,21 @@
   .refresh{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:12px;background:var(--acc);color:#04130a;border:0;border-radius:12px;padding:12px;font:800 15px Inter;cursor:pointer}
   .refresh:active{transform:scale(.98)} .refresh.spin span{display:inline-block;animation:g 1s linear infinite}
   @keyframes g{to{transform:rotate(360deg)}}
+  .live{grid-column:1/4;font-size:13px;border-radius:10px;padding:8px 10px;background:var(--bg);border:1px solid var(--line);display:none}
+  .live.on{display:block}
+  .live .l1{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+  .live .sc{font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px}
+  .live .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad);margin-right:5px;animation:p 1.2s ease-in-out infinite}
+  @keyframes p{50%{opacity:.25}}
+  .live .l2{display:flex;justify-content:space-between;gap:8px;color:var(--mut);font-size:12px;margin-top:4px;flex-wrap:wrap}
+  .live .pa{font-family:'JetBrains Mono',monospace;font-weight:700}
+  .live .up{color:var(--acc)} .live .dn{color:var(--bad)} .live .eq{color:var(--warn)}
+  .live .tb{height:3px;background:var(--line);border-radius:3px;margin-top:6px;overflow:hidden}
+  .live .tb i{display:block;height:100%;background:var(--bad)}
+  .live.envivo{border-color:#7f1d1d}
+  .live.gan{border-color:#14532d} .live.per{border-color:#7f1d1d;opacity:.85}
+  .vivohdr{display:none;font-size:12px;color:var(--mut);margin:0 0 10px;text-align:center}
+  .vivohdr.on{display:block}
   .viejo{background:#450a0a;border:1px solid #7f1d1d;color:#fecaca;border-radius:12px;padding:10px 12px;margin-top:10px;font-size:13px}
 </style>
 </head>
@@ -75,6 +90,7 @@
 
   <section id="hoy">
     <div class="box" id="resumen"></div>
+    <div class="vivohdr" id="vivohdr"></div>
     <div id="picks"></div>
     <div class="box warn" id="combinada"></div>
   </section>
@@ -506,6 +522,7 @@ const card=(p,i)=>{
     <div class="prob ${cls}"><div class="n">${p.prob.toFixed(1)}%</div><div class="q">cuota justa ${cuota(p.prob)}</div></div>
     <div class="bar"><i style="width:${p.prob}%"></i></div>
     ${p.nota ? `<div class="note">${p.nota}</div>` : ''}
+    <div class="live" id="live-${D.picks.indexOf(p)}"></div>
   </div>`;};
 const act = D.picks.filter(p=>p.r!=='ok'&&p.r!=='ko'), fin = D.picks.filter(p=>p.r==='ok'||p.r==='ko');
 const okH = fin.filter(p=>p.r==='ok').length;
@@ -527,6 +544,116 @@ $('stats').innerHTML = `<div><div class="v">${ok}</div><div class="l">Acertados<
 $('histtab').innerHTML = H.length
   ? '<tr><th>Fecha</th><th>Pick</th><th>Prob.</th><th></th></tr>' + H.slice().reverse().map(h=>`<tr><td>${h.fecha.slice(5)}</td><td>${h.apuesta}</td><td>${h.prob}%</td><td><span class="res ${h.r}">${h.r==='ok'?'✔':h.r==='ko'?'✘':'…'}</span></td></tr>`).join('')
   : '<tr><td class="muted">Aún no hay resultados. Mañana aparecerán los de hoy.</td></tr>';
+
+// ================= EN VIVO =================
+// Cada minuto consulta Polymarket (marcador, periodo, minuto y probabilidad en tiempo real)
+// de cada pick y muestra cómo va y cuánto falta. No necesita que el robot publique nada.
+const DUR = {'⚽':115,'🏀':135,'🏒':150,'⚾':180,'🏈':195,'🎾':120,'🥊':60,'🏏':240,'🏉':100,'🤾':90,'🏐':110};
+const LARGO_Q = liga => /NBA|WNBA/i.test(liga) ? 12 : 10;
+const horaTxt = d => d.toLocaleTimeString('es-VE',{hour:'numeric',minute:'2-digit',timeZone:'America/Caracas'});
+const enMin = m => m >= 60 ? `${Math.floor(m/60)} h ${Math.round(m%60)} min` : `${Math.max(0,Math.round(m))} min`;
+const VIVO = {};          // slug -> datos del evento
+let ultimaConsulta = 0;
+
+function precioEquipo(ev, eq){
+  const n = s => (s||'').toLowerCase().normalize('NFD').replace(/[^a-z0-9 ]/g,'').trim();
+  const m = (ev.markets||[]).find(m => n(m.groupItemTitle) === n(eq))
+         || (ev.markets||[]).find(m => !/draw|empate/i.test(m.groupItemTitle||'') && (n(m.groupItemTitle).includes(n(eq)) || n(eq).includes(n(m.groupItemTitle))));
+  if (!m) return null;
+  try { return parseFloat(JSON.parse(m.outcomePrices)[0]); } catch(_) { return null; }
+}
+
+// Devuelve {txt, falta} con el periodo legible y los minutos de juego que quedan (aprox.)
+function reloj(p, ev){
+  const per = (ev.period||'').toUpperCase(), el = String(ev.elapsed||'');
+  const min = parseInt(el,10), mmss = el.match(/^(\d{1,2}):(\d{2})$/);
+  if (p.deporte === '⚽'){
+    if (per === 'HT') return {txt:'Descanso', falta: new Date() - new Date(p.inicio) > 100*60e3 ? null : 45};
+    if (/PEN|P$/.test(per)) return {txt:'Penaltis', falta:null};
+    if (/ET|OT|1E|2E/.test(per) || min > 95) return {txt:`Prórroga ${isNaN(min)?'':min+"'"}`, falta: isNaN(min)?null:Math.max(0,120-min)};
+    if (per === '1H') return {txt:`1er tiempo ${isNaN(min)?'':min+"'"}`, falta: isNaN(min)?null:90-min};
+    if (per === '2H') return {txt: min>=90?`Tiempo añadido ${min}'`:`2do tiempo ${isNaN(min)?'':min+"'"}`, falta: isNaN(min)?null:Math.max(0,90-min)};
+  }
+  if (p.deporte === '🏀'){
+    const q = parseInt(per.replace(/\D/g,''),10), L = LARGO_Q(p.liga);
+    if (/OT/.test(per)) return {txt:`Tiempo extra ${mmss?el:''}`, falta: mmss?+mmss[1]+mmss[2]/60:null};
+    if (per === 'HT') return {txt:'Medio tiempo', falta: 2*L};
+    if (q){ const resto = mmss ? (+mmss[1] + mmss[2]/60) : null;
+      return {txt:`Cuarto ${q}${mmss?' · '+el:''}`, falta: resto!==null ? resto + (4-q)*L : (4-q+0.5)*L}; }
+  }
+  if (p.deporte === '🏒'){
+    const q = parseInt(per.replace(/\D/g,''),10);
+    if (/OT|SO/.test(per)) return {txt: /SO/.test(per)?'Penaltis':'Tiempo extra', falta:null};
+    if (q){ const resto = mmss ? (+mmss[1] + mmss[2]/60) : null;
+      return {txt:`Periodo ${q}${mmss?' · '+el:''}`, falta: resto!==null ? resto + (3-q)*20 : null}; }
+  }
+  if (p.deporte === '⚾' && per) return {txt: per.replace(/^T/,'Alta ').replace(/^B/,'Baja ').replace(/(\d+)$/,'$1ª entrada'), falta:null};
+  return {txt: per ? per : 'En juego', falta:null};
+}
+
+function pintarVivo(){
+  let enJuego = 0;
+  D.picks.forEach((p,i)=>{
+    const box = $('live-'+i); if (!box) return;
+    const ini = p.inicio ? new Date(p.inicio) : null, ahora = new Date();
+    const ev = p.pm ? VIVO[p.pm] : null;
+    const finEst = ini ? new Date(ini.getTime() + (DUR[p.deporte]||150)*60e3) : null;
+    let cls = '', html = '';
+    const pq = ev ? precioEquipo(ev, p.pm_eq || p.apuesta.replace('Gana ','')) : null;
+    const probAhora = pq!==null ? `<span>Prob. ahora: <span class="pa ${pq*100>=p.prob-2?'up':pq>=.5?'eq':'dn'}">${(pq*100).toFixed(pq>.99||pq<.01?1:0)} %</span> <span class="muted">(salió ${p.prob.toFixed(0)} %)</span></span>` : '';
+    const [loc, vis] = p.partido.split(/\s+vs\.?\s+/);
+    const score = ev && ev.score ? ev.score.split('-') : null;
+    const marc = score ? `${loc} <span class="sc">${score[0]} - ${score[1]}</span> ${vis}` : p.partido;
+
+    if (ev && (ev.ended || ev.closed) || p.r==='ok' || p.r==='ko'){
+      const gano = p.r ? p.r==='ok' : (pq!==null ? pq>=.5 : null);
+      cls = gano===true?'gan':gano===false?'per':'';
+      html = `<div class="l1"><span>🏁 <b>Final</b></span><span>${score?marc:(p.marcador||'')}</span></div>
+              <div class="l2"><span>${gano===true?'✔ Pick ganado':gano===false?'✘ Pick perdido':'Esperando resultado oficial'}</span>${probAhora}</div>`;
+    } else if (ev && ev.live || (pq!==null && ini && ahora>ini && (pq>=.97 || pq<=.03 || ahora<finEst))){
+      enJuego++;
+      const rl = ev ? reloj(p, ev) : {txt:'En juego', falta:null};
+      const falta = rl.falta!==null ? rl.falta : (finEst ? (finEst-ahora)/60e3 : null);
+      const avance = rl.falta!==null && DUR[p.deporte] ? 100 - 100*rl.falta/({'⚽':90,'🏀':4*LARGO_Q(p.liga),'🏒':60}[p.deporte]||DUR[p.deporte]) : (ini&&finEst ? 100*(ahora-ini)/(finEst-ini) : 0);
+      cls = 'envivo';
+      html = `<div class="l1"><span><span class="dot"></span><b>EN VIVO</b> · ${rl.txt}</span><span>${marc}</span></div>
+              <div class="l2"><span>${falta!==null && falta>0 ? (rl.falta!==null?'Quedan ~'+enMin(falta)+' de juego':'Termina aprox. '+horaTxt(finEst)) : 'Últimos minutos'}</span>${probAhora}</div>
+              <div class="tb"><i style="width:${Math.min(100,Math.max(3,avance))}%"></i></div>`;
+    } else if (ini && ahora < ini){
+      html = `<div class="l1"><span>⏳ Empieza en <b>${enMin((ini-ahora)/60e3)}</b></span><span class="muted">termina aprox. ${horaTxt(finEst)}</span></div>
+              ${probAhora?`<div class="l2"><span></span>${probAhora}</div>`:''}`;
+    } else if (ini){
+      html = `<div class="l1"><span>⌛ Debió empezar a las ${horaTxt(ini)}</span><span class="muted">esperando datos en vivo</span></div>${probAhora?`<div class="l2"><span></span>${probAhora}</div>`:''}`;
+    }
+    box.className = 'live' + (html?' on ':' ') + cls;
+    box.innerHTML = html;
+  });
+  const h = $('vivohdr');
+  h.classList.toggle('on', !!ultimaConsulta);
+  h.innerHTML = (enJuego ? `<span class="dot" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--bad);margin-right:5px"></span><b>${enJuego} partido${enJuego>1?'s':''} en vivo</b> · ` : '')
+    + `En vivo actualizado ${horaTxt(new Date(ultimaConsulta||Date.now()))} · se refresca solo cada minuto`;
+}
+
+async function consultarVivo(){
+  if (document.hidden) return;
+  const ps = D.picks.filter(p=>p.pm);
+  await Promise.all(ps.map(async p=>{
+    try {
+      const r = await fetch('https://gamma-api.polymarket.com/events?slug='+encodeURIComponent(p.pm)+'&_='+Date.now(), {cache:'no-store'});
+      const j = await r.json(); if (j && j[0]) VIVO[p.pm] = j[0];
+    } catch(_) {}
+  }));
+  ultimaConsulta = Date.now();
+  pintarVivo();
+}
+pintarVivo();
+consultarVivo();
+setInterval(consultarVivo, 60e3);              // datos en vivo cada minuto
+setInterval(pintarVivo, 20e3);                 // cuentas regresivas
+setInterval(()=>{ if (document.hidden) return; // si el robot publicó cambios (nuevo pick, resultado), recarga
+  fetch(location.pathname + '?t=' + Date.now(), {cache:'no-store'}).then(r=>r.text()).then(t=>{
+    const m = t.match(/"actualizado":\s*"([^"]*)"/); if (m && m[1] !== D.actualizado) recargar(); }).catch(()=>{}); }, 5*60e3);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) consultarVivo(); });
 
 // Tabs
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
