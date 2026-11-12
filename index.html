@@ -556,11 +556,21 @@ const VIVO = {};          // slug -> datos del evento
 let ultimaConsulta = 0;
 
 function precioEquipo(ev, eq){
-  const n = s => (s||'').toLowerCase().normalize('NFD').replace(/[^a-z0-9 ]/g,'').trim();
-  const m = (ev.markets||[]).find(m => n(m.groupItemTitle) === n(eq))
-         || (ev.markets||[]).find(m => !/draw|empate/i.test(m.groupItemTitle||'') && (n(m.groupItemTitle).includes(n(eq)) || n(eq).includes(n(m.groupItemTitle))));
-  if (!m) return null;
-  try { return parseFloat(JSON.parse(m.outcomePrices)[0]); } catch(_) { return null; }
+  const n = s => (s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-z0-9 ]/g,'').trim();
+  const igual = (a,b) => a && b && (a===b || a.includes(b) || b.includes(a));
+  const js = s => { try { return JSON.parse(s||'[]'); } catch(_) { return []; } };
+  // Solo mercados de ganador (moneyline); nunca hándicap ni totales
+  const ml = (ev.markets||[]).filter(m => !m.sportsMarketType || m.sportsMarketType === 'moneyline');
+  // Tipo fútbol: un mercado Sí/No por equipo (groupItemTitle = equipo)
+  let m = ml.find(m => n(m.groupItemTitle) === n(eq)) ||
+          ml.find(m => m.groupItemTitle && !/draw|empate/i.test(m.groupItemTitle) && igual(n(m.groupItemTitle), n(eq)));
+  if (m) return parseFloat(js(m.outcomePrices)[0]);
+  // Tipo NBA/tenis: un solo mercado con los dos equipos como resultados
+  for (const x of ml){
+    const outs = js(x.outcomes).map(n), k = outs.findIndex(o => igual(o, n(eq)));
+    if (k >= 0 && outs.length === 2 && !outs.includes('yes')) return parseFloat(js(x.outcomePrices)[k]);
+  }
+  return null;
 }
 
 // Devuelve {txt, falta} con el periodo legible y los minutos de juego que quedan (aprox.)
@@ -568,7 +578,7 @@ function reloj(p, ev){
   const per = (ev.period||'').toUpperCase(), el = String(ev.elapsed||'');
   const min = parseInt(el,10), mmss = el.match(/^(\d{1,2}):(\d{2})$/);
   if (p.deporte === '⚽'){
-    if (per === 'HT') return {txt:'Descanso', falta: new Date() - new Date(p.inicio) > 100*60e3 ? null : 45};
+    if (per === 'HT') return new Date() - new Date(p.inicio) > 100*60e3 ? {txt:'Descanso de la prórroga', falta:15} : {txt:'Descanso', falta:45};
     if (/PEN|P$/.test(per)) return {txt:'Penaltis', falta:null};
     if (/ET|OT|1E|2E/.test(per) || min > 95) return {txt:`Prórroga ${isNaN(min)?'':min+"'"}`, falta: isNaN(min)?null:Math.max(0,120-min)};
     if (per === '1H') return {txt:`1er tiempo ${isNaN(min)?'':min+"'"}`, falta: isNaN(min)?null:90-min};
@@ -616,8 +626,13 @@ function pintarVivo(){
       const falta = rl.falta!==null ? rl.falta : (finEst ? (finEst-ahora)/60e3 : null);
       const avance = rl.falta!==null && DUR[p.deporte] ? 100 - 100*rl.falta/({'⚽':90,'🏀':4*LARGO_Q(p.liga),'🏒':60}[p.deporte]||DUR[p.deporte]) : (ini&&finEst ? 100*(ahora-ini)/(finEst-ini) : 0);
       cls = 'envivo';
+      // Fútbol: el pick se decide a los 90'. Si ya pasó y Polymarket lo da perdido/ganado, decirlo claro.
+      const decidido90 = p.deporte==='⚽' && pq!==null && ini && (ahora-ini) > 110*60e3 && (pq<=.03 || pq>=.97);
+      const linea2 = decidido90 ? (pq>=.97 ? '✔ Pick ganado a los 90\'' : '✘ Pick perdido: a los 90\' no ganó (el empate pierde)')
+        : (falta!==null && falta>0 ? (rl.falta!==null?'Quedan ~'+enMin(falta)+' de juego':'Termina aprox. '+horaTxt(finEst)) : 'Últimos minutos');
+      if (decidido90) cls += pq>=.97 ? ' gan' : ' per';
       html = `<div class="l1"><span><span class="dot"></span><b>EN VIVO</b> · ${rl.txt}</span><span>${marc}</span></div>
-              <div class="l2"><span>${falta!==null && falta>0 ? (rl.falta!==null?'Quedan ~'+enMin(falta)+' de juego':'Termina aprox. '+horaTxt(finEst)) : 'Últimos minutos'}</span>${probAhora}</div>
+              <div class="l2"><span>${linea2}</span>${probAhora}</div>
               <div class="tb"><i style="width:${Math.min(100,Math.max(3,avance))}%"></i></div>`;
     } else if (ini && ahora < ini){
       html = `<div class="l1"><span>⏳ Empieza en <b>${enMin((ini-ahora)/60e3)}</b></span><span class="muted">termina aprox. ${horaTxt(finEst)}</span></div>
