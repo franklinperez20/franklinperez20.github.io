@@ -580,7 +580,10 @@ function precioEquipo(ev, eq){
 // Devuelve {txt, falta} con el periodo legible y los minutos de juego que quedan (aprox.)
 function reloj(p, ev){
   const r = reloj0(p, ev);
-  if (ev._fuente==='ESPN' && ev._det) r.txt = ev._det.replace(/^Halftime$/i,'Descanso').replace(/^Final.*$/i,'Final');
+  if (ev._fuente==='ESPN' && ev._det) r.txt = ev._det
+      .replace(/^(HT|Halftime)$/i, p.deporte==='⚽' ? 'Descanso' : 'Medio tiempo').replace(/^(FT|Final)$/i,'Final')
+      .replace(/^AET$/i,'Final tras prórroga').replace(/^FT-Pens|Pens$/i,'Penaltis').replace(/End of /i,'Fin del ')
+      .replace(/\b1st\b/,'1º').replace(/\b2nd\b/,'2º').replace(/\b3rd\b/,'3º').replace(/\b4th\b/,'4º').replace(/\bOT\b/,'Tiempo extra');
   return r;
 }
 function reloj0(p, ev){
@@ -615,7 +618,9 @@ function pintarVivo(){
   D.picks.forEach((p,i)=>{
     const box = $('live-'+i); if (!box) return;
     const ini = p.inicio ? new Date(p.inicio) : null, ahora = new Date();
-    const ev = p.pm ? VIVO[p.pm] : null;
+    const pmEv = p.pm ? VIVO[p.pm] : null, esEv = p.pm ? ESPNV[p.pm] : null;
+    // marcador/reloj de ESPN si existe (más exacto); mercados y probabilidad de Polymarket
+    const ev = esEv ? Object.assign({}, pmEv||{}, esEv) : pmEv;
     const finEst = ini ? new Date(ini.getTime() + (DUR[p.deporte]||150)*60e3) : null;
     let cls = '', html = '';
     const pq = ev ? precioEquipo(ev, p.pm_eq || p.apuesta.replace('Gana ','')) : null;
@@ -692,7 +697,7 @@ async function desdePolymarket(ps){
 }
 
 // Fuente 2: ESPN (marcador y reloj; sin probabilidad). Se usa si Polymarket no carga.
-const ESPN_DATOS = {};
+const ESPN_DATOS = {}, ESPNV = {};
 async function desdeESPN(ps){
   const conEspn = ps.filter(p=>p.espn);
   const rutas = [...new Set(conEspn.map(p=>p.espn.split('|')[0]))];
@@ -714,12 +719,8 @@ async function desdeESPN(ps){
     else if (p.deporte==='🏀'){ period = per>4?'OT':'Q'+per; elapsed = clk; }
     else if (p.deporte==='🏒'){ period = per>3?'OT':'P'+per; elapsed = clk; }
     else { period = det; }
-    // si Polymarket ya dio datos frescos, no los pisa (solo agrega lo que falte)
-    if (VIVO[p.pm] && VIVO[p.pm]._fuente==='Polymarket' && VIVO[p.pm]._t === ultimoOkPM && VIVO[p.pm].score) return;
-    VIVO[p.pm] = Object.assign({}, VIVO[p.pm]||{}, {
-      _fuente:'ESPN', live: ty.state==='in', ended: !!ty.completed, closed: !!ty.completed,
-      score: home && away ? `${home.score}-${away.score}` : '', period, elapsed, _det: det,
-    });
+    ESPNV[p.pm] = { _fuente:'ESPN', live: ty.state==='in', ended: !!ty.completed, closed: !!ty.completed,
+      score: home && away ? `${home.score}-${away.score}` : '', period, elapsed, _det: det };
     n++;
   });
   return n;
@@ -730,17 +731,17 @@ async function consultarVivo(){
   if (document.hidden) return;
   const ps = D.picks.filter(p=>p.pm);
   if (!ps.length) return;
-  let okPM = false, errPM = '';
-  try { await desdePolymarket(ps); okPM = true; ultimoOkPM = Date.now();
-        Object.values(VIVO).forEach(e=>{ if (e._fuente==='Polymarket') e._t = ultimoOkPM; }); }
-  catch(e){ errPM = (e && e.name==='AbortError') ? 'tardó demasiado' : (e && e.message) || 'sin conexión'; }
-  // ESPN siempre como respaldo si Polymarket falla; si funciona, solo para los que Polymarket no trae marcador
-  let okESPN = false;
-  if (!okPM || ps.some(p=>!VIVO[p.pm] || (!VIVO[p.pm].score && p.espn))){
-    try { okESPN = (await desdeESPN(okPM ? ps.filter(p=>!VIVO[p.pm] || !VIVO[p.pm].score) : ps)) > 0; } catch(_) {}
-  }
-  estadoFuente = okPM ? '✅ Polymarket' : okESPN ? `⚠️ Polymarket no responde en este teléfono (${errPM}) · usando ESPN` :
-                 `❌ No pude conectar con Polymarket (${errPM}) ni con ESPN. Revisa tu conexión; reintento en 1 min.`;
+  let okPM = false, errPM = '', okESPN = false, hayESPN = ps.some(p=>p.espn);
+  // Las dos fuentes a la vez: ESPN da marcador y reloj; Polymarket da la probabilidad en tiempo real
+  await Promise.all([
+    desdePolymarket(ps).then(()=>{ okPM = true; ultimoOkPM = Date.now(); })
+      .catch(e=>{ errPM = (e && e.name==='AbortError') ? 'tardó demasiado' : (e && e.message) || 'sin conexión'; }),
+    hayESPN ? desdeESPN(ps).then(n=>{ okESPN = n > 0; }).catch(()=>{}) : Promise.resolve(),
+  ]);
+  estadoFuente = okPM && okESPN ? '✅ ESPN (marcador) + Polymarket (probabilidad)'
+               : okPM ? '✅ Polymarket'
+               : okESPN ? `⚠️ Polymarket no responde en este teléfono (${errPM}) · marcador por ESPN, sin probabilidad en vivo`
+               : `❌ No pude conectar con Polymarket (${errPM}) ni con ESPN. Revisa tu conexión; reintento en 1 min.`;
   ultimaConsulta = Date.now();
   pintarVivo();
 }
