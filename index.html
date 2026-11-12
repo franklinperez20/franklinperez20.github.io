@@ -630,7 +630,13 @@ function pintarVivo(){
     const marc = score ? `${loc} <span class="sc">${score[0]} - ${score[1]}</span> ${vis}` : p.partido;
 
     if (ev && (ev.ended || ev.closed) || p.r==='ok' || p.r==='ko'){
-      const gano = p.r ? p.r==='ok' : (pq!==null ? pq>=.5 : null);
+      let gano = p.r ? p.r==='ok' : (pq!==null ? pq>=.5 : null);
+      if (gano===null && score){ // sin Polymarket: decide con el marcador de ESPN
+        const nn = x => (x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,'');
+        const eq = nn(p.apuesta.replace('Gana ','')), esLocal = nn(loc).includes(eq) || eq.includes(nn(loc));
+        const [a1,b1] = score.map(Number), dif = esLocal ? a1-b1 : b1-a1;
+        gano = (p.deporte==='⚽' && /AET|Pen|prórroga|Penaltis/i.test(ev._det||'')) ? false : dif > 0;
+      }
       cls = gano===true?'gan':gano===false?'per':'';
       html = `<div class="l1"><span>🏁 <b>Final</b></span><span>${score?marc:(p.marcador||'')}</span></div>
               <div class="l2"><span>${gano===true?'✔ Pick ganado':gano===false?'✘ Pick perdido':'Esperando resultado oficial'}</span>${probAhora}</div>`;
