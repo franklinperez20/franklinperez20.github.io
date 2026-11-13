@@ -500,8 +500,16 @@ def candidatos(juegos, espn, kalshi, solo_futuros=True):
     return lista_c
 
 
+# Copas de eliminación directa en fútbol: el favorito suele rotar suplentes y, si empata a los 90',
+# gana en la prórroga pero el pick (a 90') se pierde (pasó con Levante y Betis el 12-nov). Exigir más.
+COPAS = {"FA Cup", "Copa de la Liga (ING)", "Copa del Rey", "Coppa Italia", "Copa de Alemania",
+         "Copa de Francia", "Copa de Portugal", "Copa de Holanda"}
+MIN_PROB_COPA = 92.0
+
+
 def elegir(cands, ya=()):
     usados = {p["partido"] for p in ya}
+    cands = [p for p in cands if not (p.get("deporte") == "⚽" and p.get("liga") in COPAS and p["prob"] < MIN_PROB_COPA)]
     buenos = [p for p in cands if p["prob"] >= MIN_PROB and p["partido"] not in usados][:MAX_PICKS]
     if len(buenos) < MIN_PICKS:
         extra = [dict(p, nota=p["nota"] + " · ⚠️ menos de 80 %") for p in cands
@@ -674,7 +682,8 @@ def modo_actualizar():
         for p in D["picks"]:
             p.pop("nuevo", None)
         kalshi = kalshi_precios()
-        cands = [c for c in candidatos(juegos, espn, kalshi) if c["prob"] >= MIN_PROB]
+        cands = [c for c in candidatos(juegos, espn, kalshi) if c["prob"] >= MIN_PROB
+                 and not (c.get("deporte") == "⚽" and c.get("liga") in COPAS and c["prob"] < MIN_PROB_COPA)]
         usados = {p["partido"] for p in D["picks"]}
         for c in cands:
             if len(nuevos) >= terminados:

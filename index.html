@@ -658,8 +658,11 @@ function pintarVivo(){
     const score = ev && ev.score ? ev.score.split('-') : null;
     const marc = score ? `${loc} <span class="sc">${score[0]} - ${score[1]}</span> ${vis}` : p.partido;
 
-    if (ev && (ev.ended || ev.closed) || p.r==='ok' || p.r==='ko'){
-      let gano = p.r ? p.r==='ok' : (pq!==null ? pq>=.5 : null);
+    // Terminado: lo dice la fuente, el robot ya lo cerró, o ya pasó la hora de fin y el mercado está decidido (≤2 % / ≥98 %)
+    const decidido = pq!==null && finEst && ahora > finEst && (pq>=.98 || pq<=.02);
+    if (ev && (ev.ended || ev.closed) || p.r==='ok' || p.r==='ko' || decidido){
+      // OJO: p.r puede ser 'vivo' (el robot aún no lo cierra); eso NO es perdido
+      let gano = p.r==='ok' ? true : p.r==='ko' ? false : (pq!==null ? pq>=.5 : null);
       if (gano===null && score){ // sin Polymarket: decide con el marcador de ESPN
         const nn = x => (x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9 ]/g,'');
         const eq = nn(p.apuesta.replace('Gana ','')), esLocal = nn(loc).includes(eq) || eq.includes(nn(loc));
