@@ -27,7 +27,7 @@ concurrency: robot-probabilidades
 jobs:
   robot:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - name: Elegir modo
@@ -36,7 +36,7 @@ jobs:
           if [ -n "${{ github.event.inputs.modo }}" ]; then echo "modo=${{ github.event.inputs.modo }}" >> $GITHUB_OUTPUT;
           elif [ "$(date -u +%H)" -ge 10 ] && [ "$(date -u +%H)" -le 13 ]; then echo "modo=manana" >> $GITHUB_OUTPUT;
           else echo "modo=actualizar" >> $GITHUB_OUTPUT; fi
-      - run: python3 scripts/robot.py
+      - run: python3 -u scripts/robot.py
         env:
           MODO: ${{ steps.m.outputs.modo }}
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}

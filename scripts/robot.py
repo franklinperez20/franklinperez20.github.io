@@ -15,6 +15,7 @@ Modos (variable MODO):
 Otras variables: TELEGRAM_TOKEN, TELEGRAM_CHAT_ID, DRY_RUN=1, FORZAR=1.
 """
 import json, os, re, subprocess, sys, time, unicodedata, urllib.request, urllib.parse
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 
 CCS = timezone(timedelta(hours=-4))
@@ -112,16 +113,43 @@ KALSHI = {"nba": "KXNBAGAME", "nhl": "KXNHLGAME", "nfl": "KXNFLGAME", "mlb": "KX
 
 
 # ---------------------------------------------------------------- utilidades
-def get_json(url, intentos=3):
+INICIO_RUN = time.time()
+LIMITE_RED = float(os.environ.get("LIMITE_RED", 9 * 60))  # segundos máximos de consultas por corrida
+
+
+def sin_tiempo():
+    return time.time() - INICIO_RUN > LIMITE_RED
+
+
+def get_json(url, intentos=3, espera=15):
+    """Descarga JSON con espera corta. Si la corrida ya gastó su tiempo de red, no reintenta."""
     for i in range(intentos):
+        t0 = time.time()
         try:
             req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"})
-            with urllib.request.urlopen(req, timeout=30) as r:
-                return json.load(r)
+            with urllib.request.urlopen(req, timeout=espera) as r:
+                d = json.load(r)
+            if time.time() - t0 > 8:
+                print(f"  lento ({time.time() - t0:.0f}s): {url[:110]}", flush=True)
+            return d
         except Exception as e:
-            if i == intentos - 1:
+            print(f"  fallo intento {i + 1} ({time.time() - t0:.0f}s): {url[:110]} -> {e}", flush=True)
+            if i == intentos - 1 or sin_tiempo():
                 raise
-            time.sleep(2 + 3 * i)
+            time.sleep(1 + 2 * i)
+
+
+def en_paralelo(fn, items, hilos=12):
+    """Ejecuta fn(item) en paralelo; un fallo devuelve None para ese item."""
+    def seguro(x):
+        if sin_tiempo():
+            return None
+        try:
+            return fn(x)
+        except Exception:
+            return None
+    with ThreadPoolExecutor(hilos) as ex:
+        return list(ex.map(seguro, items))
 
 
 def norm(s):
@@ -177,28 +205,43 @@ def polymarket_juegos(incluir_cerrados=False):
     desde = (ahora - timedelta(days=1)).astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     hasta = (ahora + timedelta(days=12)).astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
     juegos, vistos_series, vistos = [], set(), set()
+    tareas = []
     for cod, (emoji, liga) in LIGAS_PM.items():
         s = deportes.get(cod)
         if not s or not s.get("series") or s["series"] in vistos_series:
             continue
         vistos_series.add(s["series"])
-        estados = ["false", "true"] if incluir_cerrados else ["false"]
+        tareas.append((cod, emoji, liga, s))
+    estados = ["false", "true"] if incluir_cerrados else ["false"]
+
+    def bajar_serie(t):
+        cod, emoji, liga, s = t
+        eventos_todos = []
         for cerrado in estados:
             for pagina in range(6):
-                params = {"series_id": s["series"], "limit": 500, "offset": 500 * pagina, "closed": cerrado,
+                if sin_tiempo():
+                    break
+                params = {"series_id": s["series"], "limit": 200, "offset": 200 * pagina, "closed": cerrado,
                           "end_date_min": desde, "end_date_max": hasta}
                 try:
-                    eventos = get_json("https://gamma-api.polymarket.com/events?" + urllib.parse.urlencode(params))
+                    eventos = get_json("https://gamma-api.polymarket.com/events?" + urllib.parse.urlencode(params), 2, 20)
                 except Exception as e:
-                    print("  Polymarket sin datos", cod, e)
+                    print("  Polymarket sin datos", cod, e, flush=True)
                     break
-                for ev in eventos:
-                    j = juego_de_evento(ev, emoji, liga, cod, s.get("ordering") or "home")
-                    if j and j["slug"] not in vistos:
-                        vistos.add(j["slug"])
-                        juegos.append(j)
-                if len(eventos) < 500:
+                eventos_todos += eventos
+                if len(eventos) < 200:
                     break
+        return t, eventos_todos
+
+    for res in en_paralelo(bajar_serie, tareas, 8):
+        if not res:
+            continue
+        (cod, emoji, liga, s), eventos = res
+        for ev in eventos:
+            j = juego_de_evento(ev, emoji, liga, cod, s.get("ordering") or "home")
+            if j and j["slug"] not in vistos:
+                vistos.add(j["slug"])
+                juegos.append(j)
     print(f"Polymarket: {len(juegos)} partidos con mercado de ganador")
     return juegos
 
@@ -304,12 +347,14 @@ def ml_de(odds, lado):
 
 def espn_juegos():
     out = []
-    for ruta in ESPN:
-        for dia in (ahora - timedelta(days=1), ahora, ahora + timedelta(days=1)):
-            try:
-                evs = get_json(f"https://site.api.espn.com/apis/site/v2/sports/{ruta}/scoreboard?dates={dia:%Y%m%d}", 2).get("events", [])
-            except Exception:
-                continue
+    pares = [(ruta, dia) for ruta in ESPN for dia in (ahora - timedelta(days=1), ahora, ahora + timedelta(days=1))]
+    bajados = en_paralelo(lambda rd: (rd[0], get_json(
+        f"https://site.api.espn.com/apis/site/v2/sports/{rd[0]}/scoreboard?dates={rd[1]:%Y%m%d}", 2, 12).get("events", [])), pares, 16)
+    for res in bajados:
+        if not res:
+            continue
+        ruta, evs = res
+        if True:
             for ev in evs:
                 c = (ev.get("competitions") or [{}])[0]
                 comp = c.get("competitors") or []
