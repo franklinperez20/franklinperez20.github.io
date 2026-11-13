@@ -14,7 +14,7 @@ Modos (variable MODO):
 
 Otras variables: TELEGRAM_TOKEN, TELEGRAM_CHAT_ID, DRY_RUN=1, FORZAR=1.
 """
-import json, os, re, subprocess, sys, time, unicodedata, urllib.request, urllib.parse
+import gzip, json, os, re, subprocess, sys, time, unicodedata, urllib.request, urllib.parse
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 
@@ -126,9 +126,14 @@ def get_json(url, intentos=3, espera=15):
     for i in range(intentos):
         t0 = time.time()
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json"})
+            # Polymarket exige Accept-Encoding: gzip en /events desde nov-2026 (si no, responde 406)
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0", "Accept": "application/json",
+                                                       "Accept-Encoding": "gzip"})
             with urllib.request.urlopen(req, timeout=espera) as r:
-                d = json.load(r)
+                cuerpo = r.read()
+                if r.headers.get("Content-Encoding", "").lower() == "gzip" or cuerpo[:2] == b"\x1f\x8b":
+                    cuerpo = gzip.decompress(cuerpo)
+                d = json.loads(cuerpo)
             if time.time() - t0 > 8:
                 print(f"  lento ({time.time() - t0:.0f}s): {url[:110]}", flush=True)
             return d
