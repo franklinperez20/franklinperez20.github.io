@@ -573,6 +573,68 @@ def _resultado(p, por_slug, espn):
     return None, None
 
 
+# ---------------------------------------------------------------- nuestro modelo y bajas
+_PROPIO = None
+
+
+def nuestro_modelo(picks):
+    """Agrega a cada pick la probabilidad de NUESTRO modelo: solo resultados reales de LiveScore, sin cuotas.
+    Nunca frena la publicación: si algo falla, el pick queda sin nuestro número."""
+    global _PROPIO
+    try:
+        if _PROPIO is None:
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+            import modelo
+            _PROPIO = modelo.Propio(hoy, limite=240)
+        for p in picks:
+            if p.get("nuestra") is not None:
+                continue
+            partes = re.split(r"\s+vs\.?\s+", p.get("partido", ""), maxsplit=1)
+            if len(partes) != 2:
+                p["nuestra"], p["nuestra_txt"] = None, "no pude leer el partido"
+                continue
+            inicio = parse_dt(p["inicio"]) if p.get("inicio") else None
+            try:
+                v, txt = _PROPIO.calcular(p, partes[0], partes[1], inicio)
+            except Exception as e:
+                v, txt = None, f"error del modelo: {e}"
+            p["nuestra"], p["nuestra_txt"] = v, txt
+            print(f"  nuestro modelo: {p['apuesta']:<35} mercado {p['prob']:5.1f} · nuestro {v if v is not None else '—'} ({txt})")
+    except Exception as e:
+        print("  nuestro modelo no disponible:", e)
+        for p in picks:
+            p.setdefault("nuestra", None)
+            p.setdefault("nuestra_txt", "modelo no disponible hoy")
+
+
+def bajas(picks):
+    """Lesionados confirmados (Out) del equipo apostado en NBA, NFL, NHL y MLB, según ESPN."""
+    rutas = {p["espn"].split("|")[0] for p in picks if p.get("espn") and p["espn"].split("|")[0] in
+             ("basketball/nba", "football/nfl", "hockey/nhl", "baseball/mlb")}
+    tabla = {}
+    for ruta in rutas:
+        try:
+            d = get_json(f"https://site.api.espn.com/apis/site/v2/sports/{ruta}/injuries", 2, 15)
+        except Exception:
+            continue
+        for eq in d.get("injuries", []):
+            fuera = [((i.get("athlete") or {}).get("displayName") or "").strip() for i in eq.get("injuries", [])
+                     if str(i.get("status", "")).lower() == "out"]
+            tabla[(ruta, eq.get("displayName", ""))] = [x for x in fuera if x]
+    for p in picks:
+        if not p.get("espn") or "Bajas" in p.get("nota", ""):
+            continue
+        ruta = p["espn"].split("|")[0]
+        eq = p["apuesta"].replace("Gana ", "", 1)
+        fuera = next((v for (r, n), v in tabla.items() if r == ruta and mismo_equipo(n, eq)), None)
+        if fuera:
+            p["nota"] += f" · 🚑 Bajas de {eq}: {', '.join(fuera[:4])}" + (f" y {len(fuera) - 4} más" if len(fuera) > 4 else "")
+
+
+def coinciden(p):
+    return p.get("nuestra") is not None and p["nuestra"] >= MIN_PROB and p["prob"] >= MIN_PROB
+
+
 # ---------------------------------------------------------------- página y envío
 def leer_pagina():
     html = open("index.html", encoding="utf-8").read()
@@ -609,7 +671,8 @@ DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Doming
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
 FUENTES_TXT = ("Polymarket (obligatorio: solo entran partidos que están en Polymarket), cuotas DraftKings vía ESPN "
                "sin el margen de la casa, y Kalshi en NBA/NHL/NFL/MLB. La probabilidad es el promedio de las fuentes; "
-               "si no coinciden por más de 12 puntos, se usa la más baja.")
+               "si no coinciden por más de 12 puntos, se usa la más baja. Aparte, NUESTRO modelo calcula su propia probabilidad "
+               "solo con resultados reales de LiveScore (sin cuotas) y lesionados de ESPN en NBA/NFL/NHL/MLB.")
 
 
 def modo_manana():
@@ -627,6 +690,8 @@ def modo_manana():
     top = elegir(cands)
     if not top:
         raise RuntimeError("no encontré partidos de hoy en Polymarket")
+    nuestro_modelo(top)
+    bajas(top)
 
     # historial: los picks anteriores
     if D.get("fecha") != hoy:
@@ -634,7 +699,8 @@ def modo_manana():
         nuevos = []
         for p in D.get("picks", []):
             r, marc = (p.get("r"), None) if p.get("r") in ("ok", "ko") else resultado(dict(p, _fecha=D["fecha"]), por_slug, espn)
-            nuevos.append({"fecha": D["fecha"], "apuesta": p["apuesta"], "prob": p["prob"], "r": r if r in ("ok", "ko") else "pend"})
+            nuevos.append({"fecha": D["fecha"], "apuesta": p["apuesta"], "prob": p["prob"], "nuestra": p.get("nuestra"),
+                           "r": r if r in ("ok", "ko") else "pend"})
         D["historial"] = (nuevos + D.get("historial", []))[:300]
 
     n90 = sum(p["prob"] >= 90 for p in top); n85 = sum(p["prob"] >= 85 for p in top); n80 = sum(p["prob"] >= 80 for p in top)
@@ -647,12 +713,22 @@ def modo_manana():
                     f"{len({j['cod'] for j in juegos})} ligas de todo el mundo. "
                     + (f"Hoy hay {n80} ganadores de 80 % o más (90 %+: {n90}; 85 %+: {n85}), en: {', '.join(deportes)}. "
                        if n80 else "Hoy NO hay ningún ganador de 80 % o más: la lista muestra los más altos, con cuidado. ")
-                    + f"El más alto es {top[0]['apuesta'].replace('Gana ', '')} con {top[0]['prob']} %."),
+                    + f"El más alto es {top[0]['apuesta'].replace('Gana ', '')} con {top[0]['prob']} %. "
+                    + resumen_propio(top)),
         "picks": top,
         "fuentes": FUENTES_TXT,
     })
     D.pop("aviso", None)
     publicar(html, m, D, f"Picks del {hoy}")
+
+
+def resumen_propio(top):
+    con = [p for p in top if p.get("nuestra") is not None]
+    if not con:
+        return "Nuestro modelo propio no pudo calcular los partidos de hoy."
+    c = [p for p in top if coinciden(p)]
+    return (f"Nuestro modelo propio (solo resultados reales, sin cuotas) calculó {len(con)} de {len(top)}: "
+            f"coincide en 80 % o más en {len(c)} (✅)" + (": " + ", ".join(p['apuesta'].replace('Gana ', '') for p in c) if c else "") + ".")
 
 
 def modo_actualizar():
@@ -691,6 +767,8 @@ def modo_actualizar():
             if c["partido"] not in usados:
                 c["nuevo"] = True
                 nuevos.append(c)
+        nuestro_modelo(nuevos)
+        bajas(nuevos)
         D["picks"] += nuevos
     if not cambios:
         print("Sin cambios.")
@@ -699,7 +777,9 @@ def modo_actualizar():
     aviso = [f"🔄 Actualización {hora_txt(ahora)}"] + lineas
     if terminados:
         aviso.append("➕ Nuevos:" if nuevos else "➕ Nuevos: no quedan ganadores de 80 % para hoy")
-        aviso += [f"• {c['deporte']} {c['apuesta']} – {c['prob']} % – {c['hora']}" for c in nuevos]
+        aviso += [f"• {c['deporte']} {c['apuesta']} – {c['prob']} %"
+                  + (f" (nuestro {c['nuestra']:.0f} %{' ✅' if coinciden(c) else ''})" if c.get("nuestra") is not None else "")
+                  + f" – {c['hora']}" for c in nuevos]
     aviso.append(f"Hoy van {ok} de {fin} acertados.")
     D["aviso"] = "\n".join(aviso)
     D["actualizado"] = ahora.strftime("%Y-%m-%d %H:%M") + " (hora de Venezuela) · actualización automática"
@@ -721,8 +801,33 @@ def modo_actualizar():
     publicar(html, m, D, msg)
 
 
+def modo_modelo():
+    """Calcula nuestro modelo para los picks que ya están publicados hoy (sin cambiar la lista)."""
+    html, m, D = leer_pagina()
+    if D.get("fecha") != hoy:
+        print("La página no es de hoy; no hago nada.")
+        return
+    for p in D["picks"]:
+        if p.get("nuestra") is None:
+            p.pop("nuestra", None)
+    nuestro_modelo(D["picks"])
+    bajas(D["picks"])
+    pend = [p for p in D["picks"] if p.get("r") not in ("ok", "ko")]
+    lineas = ["🧠 Nuevo: NUESTRO modelo propio (solo resultados reales, sin cuotas)", "Pendientes de hoy · mercado vs. nuestro:"]
+    for p in pend:
+        n = p.get("nuestra")
+        lineas.append(f"• {p['deporte']} {p['apuesta']} – mercado {p['prob']:.0f} % · nuestro "
+                      + (f"{n:.0f} %" + (" ✅" if coinciden(p) else " ⚠️" if n < 70 else "") if n is not None else "—"))
+    lineas.append("✅ = los dos dicen 80 %+ (lo más sólido) · ⚠️ = nuestro modelo lo ve por debajo de 70 %")
+    D["aviso"] = "\n".join(lineas)
+    D["resumen"] = re.sub(r"\s*Nuestro modelo propio.*$", "", D.get("resumen", "")) + " " + resumen_propio(D["picks"])
+    D["fuentes"] = FUENTES_TXT
+    print(D["aviso"])
+    publicar(html, m, D, f"Actualizacion {ahora:%H:%M} modelo propio")
+
+
 try:
-    modo_manana() if MODO == "manana" else modo_actualizar()
+    {"manana": modo_manana, "modelo": modo_modelo}.get(MODO, modo_actualizar)()
 except Exception as e:
     import traceback
     traceback.print_exc()

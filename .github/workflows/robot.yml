@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       modo:
-        description: "manana o actualizar"
+        description: "manana, actualizar o modelo"
         default: "manana"
       dry_run:
         description: "Solo mostrar (1) o publicar (0)"
@@ -30,6 +30,12 @@ jobs:
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
+      - name: Resultados ya descargados para nuestro modelo (caché)
+        uses: actions/cache@v4
+        with:
+          path: cache_modelo
+          key: modelo-${{ github.run_id }}
+          restore-keys: modelo-
       - name: Elegir modo
         id: m
         run: |

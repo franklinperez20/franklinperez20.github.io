@@ -8,16 +8,25 @@ html = open("index.html", encoding="utf-8").read()
 m = re.search(r'<script id="data" type="application/json">(.*?)</script>', html, re.S)
 D = json.loads(m.group(1))
 
-lines = [f"🤖 *Ganadores de hoy* – {D['fecha_texto']}", "_Solo ganador · todos están en Polymarket_", ""]
+lines = [f"🤖 *Ganadores de hoy* – {D['fecha_texto']}", "_Solo ganador · Mercado = Polymarket/casas · Nuestro = solo resultados reales_", ""]
 for i, p in enumerate(D["picks"], 1):
     marca = "🟢" if p["prob"] >= 80 else "🟡"
-    lines.append(f"{i}. {p['deporte']} {p['apuesta']} – *{p['prob']:.1f}%* {marca}")
+    lines.append(f"{i}. {p['deporte']} {p['apuesta']}")
+    n = p.get("nuestra")
+    if n is None:
+        nuestro = "Nuestro: —"
+    else:
+        nuestro = f"Nuestro: *{n:.0f}%* " + ("✅" if n >= 80 and p["prob"] >= 80 else "⚠️" if n < 70 else "➖")
+    lines.append(f"    Mercado: *{p['prob']:.1f}%* {marca} · {nuestro}")
     lines.append(f"    {p['partido']} · {p['liga']} · {p['hora']}")
+    if "🚑" in p.get("nota", ""):
+        lines.append("    " + p["nota"][p["nota"].index("🚑"):])
 H = D.get("historial", [])
 ok = sum(1 for h in H if h["r"] == "ok"); ko = sum(1 for h in H if h["r"] == "ko")
 if ok + ko:
     lines += ["", f"📊 Historial: {ok} acertados / {ko} fallados ({round(ok*100/(ok+ko))}%)"]
-lines += ["", "🔗 https://franklinperez20.github.io",
+lines += ["", "✅ los dos dicen 80 %+ · ➖ nuestro entre 70 y 80 · ⚠️ nuestro por debajo de 70",
+          "🔗 https://franklinperez20.github.io",
           "⚠️ Apuestas sencillas y montos pequeños: 80 % no es seguro."]
 text = "\n".join(lines)
 if os.environ.get("COMMIT_MSG","").startswith("Actualizacion") and D.get("aviso"):

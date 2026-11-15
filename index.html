@@ -33,6 +33,10 @@
   .prob{text-align:right}
   .prob .n{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700}
   .prob .q{font-size:11px;color:var(--mut)}
+  .prob .lbl{font-size:10px;color:var(--mut);text-transform:uppercase;letter-spacing:.04em}
+  .prob .our{margin-top:6px;padding-top:5px;border-top:1px dashed var(--line)}
+  .prob .our .n2{font-family:'JetBrains Mono',monospace;font-size:17px;font-weight:700}
+  .n2.si{color:var(--acc)} .n2.med{color:var(--warn)} .n2.no{color:#f87171} .n2.na{color:var(--mut)}
   .hi .n{color:var(--acc)} .mid .n{color:var(--warn)}
   .bar{grid-column:2/4;height:4px;background:var(--line);border-radius:4px;overflow:hidden}
   .bar i{display:block;height:100%;background:var(--acc)}
@@ -111,6 +115,7 @@
         <li><b>Cada mañana (desde las 6:07 am, hora de Venezuela)</b> revisa más de 150 ligas profesionales de todo el mundo que están en Polymarket: fútbol de primera división, copas y selecciones; NBA, EuroLeague, EuroCup, Champions de baloncesto y las ligas top de cada país; NHL, KHL y hockey europeo; NFL; MLB y ligas invernales (LVBP, LMP, LIDOM); tenis ATP/WTA 250 o superior; UFC; cricket, rugby, balonmano y voleibol de élite.</li>
         <li><b>Solo apuestas a ganador.</b> En fútbol el empate pierde.</li>
         <li><b>Tres fuentes:</b> Polymarket (obligatorio: si no está en Polymarket, no entra), las cuotas de DraftKings sin el margen de la casa y Kalshi (NBA, NHL, NFL, MLB). La probabilidad es el promedio; si las fuentes no coinciden por más de 12 puntos, usa la más baja.</li>
+        <li><b>Dos probabilidades por pick.</b> <b>Mercado</b>: lo que dicen Polymarket y las casas. <b>Nuestro</b>: lo calcula nuestro propio modelo SOLO con resultados reales (marcadores de los últimos 5 meses de LiveScore, fuerza de cada rival, ventaja de local, partidos recientes pesan más), sin mirar ninguna cuota. En fútbol usa goles a favor y en contra (modelo de Poisson, 90 minutos); en baloncesto, hockey y fútbol americano, la diferencia de puntos. Probado contra partidos ya jugados: cuando dijo 80 %+, acertó cerca del 90 % en baloncesto y fútbol. En tenis y béisbol todavía no da número. <b>✅ = los dos dicen 80 %+</b> (el pick más sólido); ⚠️ = nuestro modelo lo ve por debajo de 70 %. En NBA, NFL, NHL y MLB se muestran además los lesionados (🚑) del equipo apostado.</li>
         <li>Publica <b>todos los ganadores de 80 % o más</b> (hasta 15). Si hay menos de 5, completa con los siguientes más altos y los marca con ⚠️.</li>
         <li><b>Cada hora</b> (de 11 am a medianoche) marca los partidos terminados y, por cada uno, agrega el siguiente ganador de 80 % o más que aún no haya empezado. Te avisa por Telegram.</li>
         <li>Excluye universitario (NCAA), Challengers, ITF, juveniles, reservas y esports.</li>
@@ -825,6 +830,11 @@ $('resumen').innerHTML = '<h3>Resumen del día</h3>' + D.resumen;
 $('fuentes').textContent = D.fuentes;
 
 const cuota = p => (100/p).toFixed(2);
+// Nuestro modelo: probabilidad calculada solo con resultados reales (sin cuotas de casas de apuestas)
+const nuestroCls = p => p.nuestra==null ? 'na' : (p.nuestra>=80 && p.prob>=80) ? 'si' : p.nuestra>=70 ? 'med' : 'no';
+const nuestroHTML = p => `<div class="our" title="${(p.nuestra_txt||'').replace(/"/g,'')}"><div class="lbl">Nuestro</div>`
+  + (p.nuestra==null ? `<div class="n2 na">—</div>` : `<div class="n2 ${nuestroCls(p)}">${p.nuestra.toFixed(0)}%${nuestroCls(p)==='si'?' ✅':nuestroCls(p)==='no'?' ⚠️':''}</div>`)
+  + `</div>`;
 const card=(p,i)=>{
   const cls = p.prob >= 80 ? 'hi' : 'mid';
   const est = p.r==='ok'?'<span class="res ok">✔ ACERTADO</span>':p.r==='ko'?'<span class="res ko">✘ FALLADO</span>':p.r==='vivo'?'<span class="res pend">● EN JUEGO</span>':'';
@@ -833,9 +843,10 @@ const card=(p,i)=>{
     <div><div class="match">${p.deporte} ${p.partido}${p.nuevo?' <span class="res ok">NUEVO</span>':''}</div>
       <div class="meta">${p.liga} · ${p.hora} (Venezuela)${p.marcador?' · '+p.marcador:''}</div>
       <div class="bet">Apuesta: <b>${p.apuesta}</b> ${est}</div></div>
-    <div class="prob ${cls}"><div class="n">${p.prob.toFixed(1)}%</div><div class="q">cuota justa ${cuota(p.prob)}</div></div>
+    <div class="prob ${cls}"><div class="lbl">Mercado</div><div class="n">${p.prob.toFixed(1)}%</div><div class="q">cuota justa ${cuota(p.prob)}</div>${nuestroHTML(p)}</div>
     <div class="bar"><i style="width:${p.prob}%"></i></div>
     ${p.nota ? `<div class="note">${p.nota}</div>` : ''}
+    ${p.nuestra_txt !== undefined ? `<div class="note">Nuestro modelo: ${p.nuestra==null ? 'sin número ('+p.nuestra_txt+')' : p.nuestra.toFixed(1)+' % · basado en '+p.nuestra_txt+' recientes de cada equipo'}</div>` : ''}
     <div class="live" id="live-${D.picks.indexOf(p)}"></div>
   </div>`;};
 const act = D.picks.filter(p=>p.r!=='ok'&&p.r!=='ko'), fin = D.picks.filter(p=>p.r==='ok'||p.r==='ko');
@@ -855,8 +866,17 @@ const ok = H.filter(h=>h.r==='ok').length, ko = H.filter(h=>h.r==='ko').length;
 $('stats').innerHTML = `<div><div class="v">${ok}</div><div class="l">Acertados</div></div>
   <div><div class="v">${ko}</div><div class="l">Fallados</div></div>
   <div><div class="v">${ok+ko ? Math.round(ok*100/(ok+ko))+'%' : '—'}</div><div class="l">Acierto real</div></div>`;
+// Comparación: ¿quién acierta más, el mercado o nuestro modelo?
+const HC = H.filter(h=>(h.r==='ok'||h.r==='ko') && h.nuestra!=null);
+if (HC.length) {
+  const grupo = f => { const g = HC.filter(f); const a = g.filter(h=>h.r==='ok').length; return g.length ? `<b>${a} de ${g.length}</b> (${Math.round(a*100/g.length)} %)` : 'aún sin casos'; };
+  $('stats').insertAdjacentHTML('afterend', `<p style="font-size:13px;margin:10px 0 0">📊 <b>Mercado vs. nuestro modelo</b> (desde que existe):<br>
+    ✅ Los dos en 80 %+: ${grupo(h=>h.nuestra>=80 && h.prob>=80)}<br>
+    ➖ Nuestro entre 70 y 80: ${grupo(h=>h.nuestra>=70 && h.nuestra<80)}<br>
+    ⚠️ Nuestro por debajo de 70: ${grupo(h=>h.nuestra<70)}</p>`);
+}
 $('histtab').innerHTML = H.length
-  ? '<tr><th>Fecha</th><th>Pick</th><th>Prob.</th><th></th></tr>' + H.slice().reverse().map(h=>`<tr><td>${h.fecha.slice(5)}</td><td>${h.apuesta}</td><td>${h.prob}%</td><td><span class="res ${h.r}">${h.r==='ok'?'✔':h.r==='ko'?'✘':'…'}</span></td></tr>`).join('')
+  ? '<tr><th>Fecha</th><th>Pick</th><th>Mercado</th><th>Nuestro</th><th></th></tr>' + H.slice().reverse().map(h=>`<tr><td>${h.fecha.slice(5)}</td><td>${h.apuesta}</td><td>${h.prob}%</td><td>${h.nuestra!=null?Math.round(h.nuestra)+'%':'—'}</td><td><span class="res ${h.r}">${h.r==='ok'?'✔':h.r==='ko'?'✘':'…'}</span></td></tr>`).join('')
   : '<tr><td class="muted">Aún no hay resultados. Mañana aparecerán los de hoy.</td></tr>';
 
 // ================= EN VIVO =================

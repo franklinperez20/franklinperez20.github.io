@@ -107,8 +107,6 @@ def _terminados(eventos_por_dia, antes_de, dep):
                 continue
             if dep == "soccer" and e["e"] != "FT":
                 continue  # en fútbol solo sirven los 90 minutos limpios
-            if re.search(r"\bwomen\b|\bU\d\d\b|youth", f"{e['c']} {e['s']}", re.I) and dep != "tennis":
-                pass  # se dejan: no molestan (son otros equipos)
             out.append((edad, f, e))
     return out
 
@@ -141,7 +139,6 @@ class Modelo:
                 num[a] = num.get(a, 0) + w * (-(m - H) + r.get(h, 0))
                 den[a] = den.get(a, 0) + w
             r = {t: num[t] / (den[t] + ridge) for t in num}
-            m_r = sum(r.values()) / max(1, len(r))
             H = sum(w * (m - r[h] + r[a]) for w, h, a, m in g) / sw
         res = sum(w * (m - H - r[h] + r[a]) ** 2 for w, h, a, m in g) / sw
         self.H, self.r, self.sigma = H, r, math.sqrt(res)
@@ -237,34 +234,39 @@ def _hora(t):
 
 
 class Propio:
-    """Se arma una vez por corrida y responde la probabilidad de nuestro modelo para cada pick."""
+    """Responde la probabilidad de nuestro modelo para cada pick. Cada deporte se arma la primera vez que se pide."""
 
-    def __init__(self, hoy_iso, emojis, limite=300):
+    def __init__(self, hoy_iso, limite=240):
         self.hoy = hoy_iso.replace("-", "")
-        self.mod, self.hoy_evs = {}, {}
-        t0 = time.time()
-        for emoji in emojis:
-            dep = DEPORTE.get(emoji)
-            if not dep or dep in self.mod:
-                continue
-            resto = limite - (time.time() - t0)
-            if resto < 20:
-                print(f"  modelo: sin tiempo para {dep}", flush=True)
-                continue
+        self.mod, self.hoy_evs, self.fallidos = {}, {}, set()
+        self.t0, self.limite = time.time(), limite
+
+    def asegurar(self, dep):
+        if dep in self.mod or dep in self.fallidos:
+            return self.mod.get(dep)
+        resto = self.limite - (time.time() - self.t0)
+        if resto < 20:
+            print(f"  modelo: sin tiempo para {dep}", flush=True)
+            self.fallidos.add(dep)
+            return None
+        try:
+            hist = historia(dep, self.hoy, limite=resto)
+            ma = (datetime.strptime(self.hoy, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
             try:
-                hist = historia(dep, self.hoy, limite=resto)
-                ma = (datetime.strptime(self.hoy, "%Y%m%d") + timedelta(days=1)).strftime("%Y%m%d")
-                try:
-                    hist_m = dia(dep, ma, self.hoy)
-                except Exception:
-                    hist_m = []
-                self.hoy_evs[dep] = hist.get(self.hoy, []) + hist_m
-                partidos = _terminados(hist, self.hoy, dep)
-                self.mod[dep] = Modelo(dep, partidos)
-                print(f"  modelo {dep}: {len(partidos)} partidos jugados, {len(self.mod[dep].n)} equipos "
-                      f"({time.time() - t0:.0f}s)", flush=True)
-            except Exception as e:
-                print(f"  modelo: falló {dep}: {e}", flush=True)
+                manana = dia(dep, ma, self.hoy)
+            except Exception:
+                manana = []
+            self.hoy_evs[dep] = hist.get(self.hoy, []) + manana
+            partidos = _terminados(hist, self.hoy, dep)
+            if len(partidos) < 200:
+                raise RuntimeError(f"muy pocos partidos ({len(partidos)})")
+            self.mod[dep] = Modelo(dep, partidos)
+            print(f"  modelo {dep}: {len(partidos)} partidos jugados, {len(self.mod[dep].n)} equipos "
+                  f"({time.time() - self.t0:.0f}s)", flush=True)
+        except Exception as e:
+            print(f"  modelo: falló {dep}: {e}", flush=True)
+            self.fallidos.add(dep)
+        return self.mod.get(dep)
 
     def evento(self, dep, local, visita, inicio):
         mejor, puntos = None, 0.0
@@ -285,9 +287,11 @@ class Propio:
     def calcular(self, pick, local, visita, inicio):
         """Devuelve (prob en %, texto) para el equipo del pick, o (None, motivo)."""
         dep = DEPORTE.get(pick.get("deporte"))
-        if not dep:
-            return None, "deporte sin modelo propio"
-        mod = self.mod.get(dep)
+        if not dep or dep == "baseball":
+            return None, "sin datos propios para este deporte"
+        if dep in SIN_NUMERO:
+            return None, SIN_NUMERO[dep]
+        mod = self.asegurar(dep)
         if not mod:
             return None, "sin datos del modelo hoy"
         hallado = self.evento(dep, local, visita, inicio)
@@ -304,4 +308,7 @@ class Propio:
 
 
 # Ajustes de calibración por deporte (se fijan con la prueba contra partidos ya jugados: scripts/prueba_modelo.py)
-AJUSTE = {}
+AJUSTE = {"basketball": {"k": 1.0}, "soccer": {"k": 1.0, "empate": 1.0}, "hockey": {"k": 1.2},
+          "american-football": {"k": 1.3}}
+# Tenis: en la prueba del 15-nov-2026 el Elo con datos de LiveScore no fue confiable -> no se muestra número.
+SIN_NUMERO = {"tennis": "en tenis nuestro modelo aún no es confiable"}
