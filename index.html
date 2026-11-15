@@ -73,6 +73,15 @@
   .live.gan{border-color:#14532d} .live.per{border-color:#7f1d1d;opacity:.85}
   .vivohdr{display:none;font-size:12px;color:var(--mut);margin:0 0 10px;text-align:center}
   .vivohdr.on{display:block}
+  .arb{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;margin-bottom:10px}
+  .arb.si{border-color:#166534} .arb .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+  .arb .gan{text-align:right;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:22px}
+  .arb .gan.pos{color:var(--acc)} .arb .gan.neg{color:#f87171} .arb .gan small{display:block;font:400 11px Inter;color:var(--mut)}
+  .arb table{margin-top:8px} .arb td.r{text-align:right;font-family:'JetBrains Mono',monospace}
+  .arb .tot{display:flex;justify-content:space-between;font-size:13px;margin-top:8px;padding-top:8px;border-top:1px dashed var(--line)}
+  .suma{font-family:'JetBrains Mono',monospace;font-size:12px;padding:2px 7px;border-radius:6px;background:var(--bg);border:1px solid var(--line)}
+  .montoarb{display:flex;align-items:center;gap:8px;font-size:14px;margin:10px 0 4px}
+  .montoarb input{width:110px;background:var(--bg);border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:8px;font:700 16px 'JetBrains Mono',monospace}
   .viejo{background:#450a0a;border:1px solid #7f1d1d;color:#fecaca;border-radius:12px;padding:10px 12px;margin-top:10px;font-size:13px}
 </style>
 </head>
@@ -88,6 +97,7 @@
 
   <div class="tabs">
     <button class="on" data-t="hoy">Top 10 de hoy</button>
+    <button data-t="arbi">💰 Arbitraje</button>
     <button data-t="hist">Historial</button>
     <button data-t="como">Cómo funciona</button>
   </div>
@@ -97,6 +107,27 @@
     <div class="vivohdr" id="vivohdr"></div>
     <div id="picks"></div>
     <div class="box warn" id="combinada"></div>
+  </section>
+
+  <section id="arbi" class="hide">
+    <div class="box">
+      <h3>💰 Ganancia segura entre casas (arbitraje)</h3>
+      Se apuesta <b>"gana el favorito"</b> en una casa y <b>"el favorito NO gana"</b> en otra. Si las dos casas juntas suman
+      <b>menos de 100 %</b>, cobras lo mismo pase lo que pase y la diferencia es ganancia. En la misma casa siempre suma más de 100 %: por eso hacen falta <b>2 casas distintas</b>.
+      <div class="montoarb">¿Cuánto pones al favorito? $ <input id="montoArb" type="number" min="1" step="1" value="100" inputmode="decimal"></div>
+      <div class="muted" id="arbInfo"></div>
+    </div>
+    <div id="arbLista"></div>
+    <div id="arbCerca"></div>
+    <div class="box warn">
+      <h3>Antes de apostar</h3>
+      <ul>
+        <li>Las cuotas cambian en minutos: <b>confirma las dos</b> en las casas y haz las dos apuestas una detrás de la otra.</li>
+        <li>Si las reglas de las casas son distintas (partido suspendido, prórroga), la ganancia puede desaparecer.</li>
+        <li>Incluye la comisión de Kalshi. No incluye costos de depósito o retiro.</li>
+        <li>Fuentes que compara: Polymarket, DraftKings (vía ESPN) y Kalshi. bet365 y Parley no publican sus cuotas, así que no entran.</li>
+      </ul>
+    </div>
   </section>
 
   <section id="hist" class="hide">
@@ -119,6 +150,7 @@
         <li>Publica <b>todos los ganadores de 80 % o más</b> (hasta 15). Si hay menos de 5, completa con los siguientes más altos y los marca con ⚠️.</li>
         <li><b>Cada hora</b> (de 11 am a medianoche) marca los partidos terminados y, por cada uno, agrega el siguiente ganador de 80 % o más que aún no haya empezado. Te avisa por Telegram.</li>
         <li>Excluye universitario (NCAA), Challengers, ITF, juveniles, reservas y esports.</li>
+        <li><b>💰 Arbitraje:</b> en cada corrida compara el precio real de Polymarket con DraftKings y Kalshi en todos los partidos de hoy. Si "gana el favorito" en una casa + "no gana" en otra suman menos de 100 %, lo muestra en la pestaña Arbitraje con cuánto poner en cada casa y la ganancia exacta, y te avisa por Telegram.</li>
       </ul>
     </div>
     <div class="box warn">
@@ -1137,10 +1169,35 @@ setInterval(()=>{ if (document.hidden) return; // si el robot publicó cambios (
     const m = t.match(/"actualizado":\s*"([^"]*)"/); if (m && m[1] !== D.actualizado) recargar(); }).catch(()=>{}); }, 5*60e3);
 document.addEventListener('visibilitychange', () => { if (!document.hidden) consultarVivo(); });
 
+// ================= ARBITRAJE =================
+function pintarArb(){
+  const A = D.arbitraje; const base = A ? A.base : 100;
+  let monto = parseFloat($('montoArb').value); if (!(monto > 0)) monto = 100;
+  const k = monto / base, $$ = v => '$' + (v*k).toLocaleString('es-VE',{minimumFractionDigits:2,maximumFractionDigits:2});
+  if (!A) { $('arbInfo').textContent = 'El robot calcula esto en la próxima corrida.'; $('arbLista').innerHTML=''; $('arbCerca').innerHTML=''; return; }
+  $('arbInfo').textContent = `Revisado: ${A.actualizado} (Venezuela) · ${A.revisados} partidos de hoy comparables entre casas.`;
+  const tarjeta = (x, si) => `<div class="arb ${si?'si':''}">
+    <div class="top"><div><div class="match">${x.deporte} ${x.partido}</div>
+      <div class="meta">${x.liga} · ${x.hora} (Venezuela) · <span class="suma">suma ${x.suma.toFixed(2)} %</span></div></div>
+      <div class="gan ${x.ganancia>0?'pos':'neg'}">${x.ganancia>0?'+':'−'}${$$(Math.abs(x.ganancia)).slice(0)}<small>${x.ganancia>0?'ganancia segura':'pierdes'} (${x.pct.toFixed(2)} %)</small></div></div>
+    <table><tr><th>Casa</th><th>Apuesta</th><th>Cuota</th><th style="text-align:right">Pones</th></tr>
+      ${x.patas.map(p=>`<tr><td>${p.casa}</td><td>${p.apuesta}</td><td>${p.cuota.toFixed(2)}</td><td class="r">${$$(p.monto)}</td></tr>`).join('')}</table>
+    <div class="tot"><span>Pones en total <b>${$$(x.invertido)}</b></span><span>Cobras siempre <b>${$$(x.cobro)}</b></span></div>
+    ${x.aviso?`<div class="note" style="color:var(--warn);margin-top:6px">⚠️ ${x.aviso}</div>`:''}
+  </div>`;
+  $('arbLista').innerHTML = A.oportunidades.length
+    ? `<div class="box"><h3>✅ ${A.oportunidades.length} con ganancia segura ahora</h3>Pon exactamente estos montos en cada casa.</div>` + A.oportunidades.map(x=>tarjeta(x,true)).join('')
+    : `<div class="box"><h3>Ahora mismo no hay ganancia segura</h3>Las casas están de acuerdo (todas suman 100 % o más). El robot revisa cada hora y te avisa por Telegram apenas aparezca una.</div>`;
+  $('arbCerca').innerHTML = A.cercanas.length
+    ? `<div class="box"><h3>Las más cercanas (todavía no dan ganancia)</h3>Así sabes qué tan lejos están: si la suma baja de 100 %, pasan arriba.</div>` + A.cercanas.map(x=>tarjeta(x,false)).join('') : '';
+}
+$('montoArb').addEventListener('input', pintarArb);
+pintarArb();
+
 // Tabs
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x===b));
-  ['hoy','hist','como'].forEach(s=>$(s).classList.toggle('hide',s!==b.dataset.t));
+  ['hoy','arbi','hist','como'].forEach(s=>$(s).classList.toggle('hide',s!==b.dataset.t));
 });
 </script>
 </body>

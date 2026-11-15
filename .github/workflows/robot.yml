@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
     inputs:
       modo:
-        description: "manana, actualizar o modelo"
+        description: "manana, actualizar, modelo o arbitraje"
         default: "manana"
       dry_run:
         description: "Solo mostrar (1) o publicar (0)"

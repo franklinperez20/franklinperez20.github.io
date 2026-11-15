@@ -109,6 +109,7 @@ ESPN = [  # rutas ESPN con cuotas DraftKings (para contrastar)
     "soccer/ita.coppa_italia", "soccer/ger.dfb_pokal", "soccer/fra.coupe_de_france", "soccer/uefa.nations",
     "soccer/fifa.friendly", "soccer/fifa.worldq.uefa", "soccer/fifa.worldq.conmebol", "soccer/fifa.worldq.concacaf",
 ]
+KALSHI_LIBRO = {}  # clave de mercado Kalshi -> (bid, ask) reales, para el arbitraje
 KALSHI = {"nba": "KXNBAGAME", "nhl": "KXNHLGAME", "nfl": "KXNFLGAME", "mlb": "KXMLBGAME"}
 
 
@@ -192,6 +193,17 @@ def lista(v):
         return []
 
 
+def libro(m):
+    """(bid, ask) reales del primer resultado de un mercado de Polymarket, o (None, None)."""
+    try:
+        bid, ask = float(m.get("bestBid") or 0), float(m.get("bestAsk") or 0)
+    except (TypeError, ValueError):
+        return None, None
+    if 0 < bid < ask < 1:
+        return bid, ask
+    return None, None
+
+
 def precio_si(m):
     """Probabilidad del primer resultado de un mercado de Polymarket (punto medio si el libro es estrecho)."""
     try:
@@ -273,6 +285,7 @@ def juego_de_evento(ev, emoji, liga, cod, ordering):
     if len(partes) != 2:
         return None
     probs, empate = {}, None
+    compra, nogana = {}, {}  # precio real para COMPRAR "gana X" y "X no gana" (para el arbitraje)
     if len(mls) == 1 and len(lista(mls[0].get("outcomes"))) == 2:
         m = mls[0]
         outs = lista(m["outcomes"])
@@ -280,6 +293,10 @@ def juego_de_evento(ev, emoji, liga, cod, ordering):
         if p0 is None:
             return None
         probs = {outs[0]: p0, outs[1]: 1 - p0}
+        bid, ask = libro(m)
+        if bid:
+            compra = {outs[0]: ask, outs[1]: 1 - bid}
+            nogana = {outs[0]: 1 - bid, outs[1]: ask}
         cerrado = [float(x) for x in lista(m.get("outcomePrices"))] if m.get("closed") else None
         ganador = None
         if cerrado and max(cerrado) >= 0.98:
@@ -292,14 +309,19 @@ def juego_de_evento(ev, emoji, liga, cod, ordering):
             if p is None:
                 continue
             cerrado = [float(x) for x in lista(m.get("outcomePrices"))] if m.get("closed") else None
+            bid, ask = libro(m)
             if "draw" in q or "empate" in q:
                 empate = p
+                if bid:
+                    compra["__empate__"] = ask
                 if cerrado and cerrado[0] >= 0.98:
                     ganador = "__empate__"
                 continue
             eq = next((t for t in partes if t.lower() in q), None) or m.get("groupItemTitle")
             if eq:
                 probs[eq] = p
+                if bid:
+                    compra[eq], nogana[eq] = ask, 1 - bid
                 if cerrado and cerrado[0] >= 0.98:
                     ganador = eq
         if len(probs) != 2:
@@ -320,7 +342,7 @@ def juego_de_evento(ev, emoji, liga, cod, ordering):
         "local": local, "visita": visita, "equipos": equipos, "pm": probs, "empate": empate is not None,
         "liq": liq, "cerrado": bool(ev.get("closed")) or bool(ev.get("ended")) or all(m.get("closed") for m in mls), "ganador": ganador,
         "vivo": bool(ev.get("live")), "marcador": ev.get("score") or "", "periodo": ev.get("period") or "",
-        "fuentes": {},
+        "fuentes": {}, "compra": compra, "nogana": nogana,
     }
 
 
@@ -333,6 +355,16 @@ def american_a_prob(ml):
     if ml == 0:
         return None
     return 100 / (ml + 100) if ml > 0 else -ml / (-ml + 100)
+
+
+def american_a_decimal(ml):
+    try:
+        ml = float(str(ml).replace("+", ""))
+    except (TypeError, ValueError):
+        return None
+    if ml == 0:
+        return None
+    return round(1 + ml / 100 if ml > 0 else 1 + 100 / -ml, 4)
 
 
 def ml_de(odds, lado):
@@ -375,7 +407,7 @@ def espn_juegos():
                      "estado": st.get("state"), "terminado": st.get("completed"), "detalle": st.get("shortDetail", ""),
                      "marcador": f"{local.get('score', '')}-{visita.get('score', '')}",
                      "ganador": next((t["team"].get("displayName") for t in comp if t.get("winner")), None),
-                     "dk": None, "ruta": ruta, "id": str(ev.get("id") or "")}
+                     "dk": None, "dk_dec": None, "ruta": ruta, "id": str(ev.get("id") or "")}
                 od = next((o for o in (c.get("odds") or []) if isinstance(o, dict)), None)
                 if od:
                     ph, pa = american_a_prob(ml_de(od, "home")), american_a_prob(ml_de(od, "away"))
@@ -383,6 +415,11 @@ def espn_juegos():
                     if ph and pa and (pd or not ruta.startswith("soccer")):
                         tot = ph + pa + (pd or 0)
                         j["dk"] = {j["local"]: ph / tot, j["visita"]: pa / tot}
+                        dec = {j["local"]: american_a_decimal(ml_de(od, "home")), j["visita"]: american_a_decimal(ml_de(od, "away"))}
+                        if ruta.startswith("soccer"):
+                            dec["__empate__"] = american_a_decimal(((od.get("drawOdds") or {}).get("moneyLine")) or ml_de(od, "draw"))
+                        if all(v and v > 1 for v in dec.values()):
+                            j["dk_dec"] = dec
                 out.append(j)
     print(f"ESPN: {len(out)} partidos ({sum(1 for j in out if j['dk'])} con cuota DraftKings)")
     return out
@@ -421,6 +458,8 @@ def kalshi_precios():
                 ev = m.get("event_ticker", "")
                 abrev = m.get("ticker", "").rsplit("-", 1)[-1]
                 out[(cod, ev, abrev, m.get("yes_sub_title") or "")] = p
+                if 0 < bid < ask < 1:
+                    KALSHI_LIBRO[(cod, ev, abrev, m.get("yes_sub_title") or "")] = (bid, ask)
             cursor = d.get("cursor")
             if not cursor:
                 break
@@ -428,8 +467,9 @@ def kalshi_precios():
     return out
 
 
-def precio_kalshi(juego, e, kalshi):
-    """Busca el mercado de Kalshi del mismo partido (fecha + abreviatura o ciudad del equipo)."""
+def precio_kalshi(juego, e, kalshi, crudo=False):
+    """Busca el mercado de Kalshi del mismo partido (fecha + abreviatura o ciudad del equipo).
+    crudo=True devuelve {equipo: (bid, ask)} reales en vez de la probabilidad."""
     if juego["cod"] not in KALSHI or not e or not e["inicio"]:
         return None
     claves = {(e["inicio"] + timedelta(hours=h)).strftime("%y%b%d").upper() for h in (-6, 0, 6)}
@@ -441,9 +481,11 @@ def precio_kalshi(juego, e, kalshi):
             if ab == (info["abbr"] or "").upper() or (sub and info["loc"] and sub.lower() == info["loc"].lower()):
                 otro = next(i for n, i in e["abrev"].items() if n != nombre)
                 if (otro["abbr"] or "?").upper() in ev.split("-")[-1] or ab in ev.split("-")[-1]:
-                    res[nombre] = p
-    if len(res) != 2:
+                    res[nombre] = KALSHI_LIBRO.get((cod, ev, ab, sub)) if crudo else p
+    if len(res) != 2 or (crudo and not all(res.values())):
         return None
+    if crudo:
+        return res
     tot = sum(res.values())
     return {k: v / tot for k, v in res.items()}
 
@@ -635,6 +677,134 @@ def coinciden(p):
     return p.get("nuestra") is not None and p["nuestra"] >= MIN_PROB and p["prob"] >= MIN_PROB
 
 
+# ---------------------------------------------------------------- arbitraje (ganancia segura entre casas)
+# Idea: "gana el favorito" en una casa + "el favorito NO gana" en otra. Si la suma de lo que cuesta
+# cobrar $1 por cada lado es menor que $1 (menos de 100 %), cobras lo mismo pase lo que pase y ganas.
+BASE_ARB = 100.0          # dólares que se ponen al favorito en el ejemplo
+COMISION_PM = float(os.environ.get("COMISION_PM", "0"))  # comisión de Polymarket por acción (0 en deportes al escribir esto)
+MAX_GANANCIA_CREIBLE = 0.06  # más de 6 % casi siempre es una cuota vieja o un error de datos
+
+
+def comision_kalshi(precio):
+    """Comisión de Kalshi por contrato (tabla pública: 7 % de precio × (1 − precio))."""
+    return 0.07 * precio * (1 - precio)
+
+
+def _lados(j, e, kalshi):
+    """Devuelve (fav, otro, opciones_gana, opciones_no_gana). Cada opción: (casa, [(apuesta, costo_por_$1)])."""
+    fav = max(j["pm"], key=j["pm"].get)
+    otro = next(t for t in j["pm"] if t != fav)
+    gana, nogana = [], []
+    c = j.get("compra", {}).get(fav)
+    if c:
+        gana.append(("Polymarket", [(f"Gana {fav}", c + COMISION_PM)]))
+    c = j.get("nogana", {}).get(fav)
+    if c:
+        nogana.append(("Polymarket", [(f"{fav} NO gana" if j["empate"] else f"Gana {otro}", c + COMISION_PM)]))
+    if e and e.get("dk_dec"):
+        dec = e["dk_dec"]
+        kf = next((n for n in dec if n != "__empate__" and mismo_equipo(n, fav)), None)
+        ko = next((n for n in dec if n not in ("__empate__", kf)), None)
+        if kf and ko:
+            gana.append(("DraftKings", [(f"Gana {kf}", 1 / dec[kf])]))
+            patas = [(f"Gana {ko}", 1 / dec[ko])]
+            if "__empate__" in dec:
+                patas.append(("Empate", 1 / dec["__empate__"]))
+            nogana.append(("DraftKings", patas))
+    kl = precio_kalshi(j, e, kalshi, crudo=True) if e else None
+    if kl:
+        kf = next((n for n in kl if mismo_equipo(n, fav)), None)
+        ko = next((n for n in kl if n != kf), None)
+        if kf and ko:
+            (bf, af), (bo, ao) = kl[kf], kl[ko]
+            gana.append(("Kalshi", [(f"Gana {kf}", af + comision_kalshi(af))]))
+            p_no = min(ao, 1 - bf)  # comprar "gana el otro" o "NO" del favorito: lo más barato
+            nogana.append(("Kalshi", [(f"Gana {ko}", p_no + comision_kalshi(p_no))]))
+    return fav, otro, gana, nogana
+
+
+def _calculo(base, a, b):
+    """Reparte el dinero: base al favorito; el otro lado lo justo para cobrar lo mismo en cualquier caso."""
+    casa_a, patas_a = a
+    casa_b, patas_b = b
+    ca = patas_a[0][1]
+    cobro = base / ca
+    patas = [{"casa": casa_a, "apuesta": patas_a[0][0], "cuota": round(1 / ca, 3), "monto": round(base, 2), "cobra": round(cobro, 2)}]
+    for ap, c in patas_b:
+        patas.append({"casa": casa_b, "apuesta": ap, "cuota": round(1 / c, 3), "monto": round(cobro * c, 2), "cobra": round(cobro, 2)})
+    invertido = sum(p["monto"] for p in patas)
+    return patas, round(invertido, 2), round(cobro, 2), round(cobro - invertido, 2)
+
+
+def arbitrajes(juegos, espn, kalshi, base=BASE_ARB):
+    """Revisa los partidos de hoy que aún no empiezan y busca combinaciones entre casas que dejen ganancia segura."""
+    oport, cercanas, revisados = [], [], 0
+    for j in juegos:
+        if j["inicio"].strftime("%Y-%m-%d") != hoy or j["inicio"] <= ahora or j["cerrado"] or j["vivo"] or j["liq"] < MIN_LIQ:
+            continue
+        e = emparejar_espn(j, espn)
+        fav, otro, gana, nogana = _lados(j, e, kalshi)
+        if not gana or not nogana:
+            continue
+        revisados += 1
+        mejor = None
+        for a in gana:
+            for b in nogana:
+                if a[0] == b[0]:
+                    continue  # en la misma casa nunca hay ganancia (siempre suma más de 100 %)
+                suma = a[1][0][1] + sum(c for _, c in b[1])
+                if mejor is None or suma < mejor[0]:
+                    mejor = (suma, a, b)
+        if not mejor:
+            continue
+        suma, a, b = mejor
+        patas, invertido, cobro, ganancia = _calculo(base, a, b)
+        partido = f"{e['local']} vs {e['visita']}" if e else f"{j['local']} vs {j['visita']}"
+        item = {
+            "deporte": j["emoji"], "liga": j["liga"], "partido": partido, "hora": hora_txt(j["inicio"]),
+            "suma": round(suma * 100, 2), "invertido": invertido, "cobro": cobro, "ganancia": ganancia,
+            "pct": round(ganancia * 100 / invertido, 2) if invertido else 0, "patas": patas,
+            "empate": j["empate"], "pm": j["slug"],
+        }
+        if suma < 1:
+            if 1 - suma > MAX_GANANCIA_CREIBLE:
+                item["aviso"] = "Demasiado bueno: casi seguro es una cuota vieja o un error. Verifica las dos cuotas antes de apostar."
+            oport.append(item)
+        else:
+            cercanas.append(item)
+    oport.sort(key=lambda x: -x["pct"])
+    cercanas.sort(key=lambda x: x["suma"])
+    print(f"Arbitraje: {revisados} partidos comparables · {len(oport)} con ganancia segura")
+    for x in oport[:10] + cercanas[:5]:
+        print(f"   suma {x['suma']:6.2f} % ganancia {x['ganancia']:7.2f} {x['partido']} · "
+              + " + ".join(f"{p['casa']} {p['apuesta']} ${p['monto']}" for p in x["patas"]))
+    return {"actualizado": ahora.strftime("%Y-%m-%d %H:%M"), "base": base, "revisados": revisados,
+            "oportunidades": oport[:10], "cercanas": cercanas[:5]}
+
+
+def firma_arb(A):
+    return sorted(f"{x['partido']}|{'+'.join(p['casa'] for p in x['patas'])}|{x['ganancia']:.0f}" for x in (A or {}).get("oportunidades", []))
+
+
+def aviso_arb(A, anterior):
+    """Texto de Telegram con las oportunidades NUEVAS (las que no estaban en la publicación anterior)."""
+    viejas = {f.rsplit("|", 1)[0] for f in firma_arb(anterior)}
+    nuevas = [x for x in A["oportunidades"] if f"{x['partido']}|{'+'.join(p['casa'] for p in x['patas'])}" not in viejas]
+    if not nuevas:
+        return None
+    t = ["💰 GANANCIA SEGURA ENCONTRADA (arbitraje)", ""]
+    for x in nuevas[:5]:
+        t.append(f"{x['deporte']} {x['partido']} · {x['liga']} · {x['hora']}")
+        for p in x["patas"]:
+            t.append(f"   • {p['casa']}: {p['apuesta']} (cuota {p['cuota']:.2f}) → pon ${p['monto']:.2f}")
+        t.append(f"   Pones ${x['invertido']:.2f} · cobras ${x['cobro']:.2f} pase lo que pase")
+        t.append(f"   ✅ GANANCIA: ${x['ganancia']:.2f} ({x['pct']:.2f} %)" + (f"\n   ⚠️ {x['aviso']}" if x.get("aviso") else ""))
+        t.append("")
+    t += ["Las cuotas cambian en minutos: confirma las dos antes de apostar y haz las dos apuestas seguidas.",
+          "🔗 https://franklinperez20.github.io (pestaña Arbitraje)"]
+    return "\n".join(t)
+
+
 # ---------------------------------------------------------------- página y envío
 def leer_pagina():
     html = open("index.html", encoding="utf-8").read()
@@ -675,6 +845,33 @@ FUENTES_TXT = ("Polymarket (obligatorio: solo entran partidos que están en Poly
                "solo con resultados reales de LiveScore (sin cuotas) y lesionados de ESPN en NBA/NFL/NHL/MLB.")
 
 
+def arb_anterior(D):
+    A = D.get("arbitraje") or {}
+    return A if str(A.get("actualizado", "")).startswith(hoy) else None
+
+
+def enviar_arb(A, anterior):
+    t = aviso_arb(A, anterior)
+    if not t:
+        return
+    print(t)
+    if not DRY:
+        try:
+            telegram(t)
+        except Exception as e:
+            print("  no pude mandar el Telegram del arbitraje:", e)
+
+
+def calcular_arb(juegos, espn, kalshi):
+    try:
+        return arbitrajes(juegos, espn, kalshi)
+    except Exception as e:  # el arbitraje nunca frena la publicación de los picks
+        import traceback
+        traceback.print_exc()
+        print("  arbitraje no disponible:", e)
+        return None
+
+
 def modo_manana():
     html, m, D = leer_pagina()
     if D.get("fecha") == hoy and not FORZAR:
@@ -690,6 +887,10 @@ def modo_manana():
     top = elegir(cands)
     if not top:
         raise RuntimeError("no encontré partidos de hoy en Polymarket")
+    anterior = arb_anterior(D)
+    A = calcular_arb(juegos, espn, kalshi)
+    if A:
+        D["arbitraje"] = A
     nuestro_modelo(top)
     bajas(top)
 
@@ -720,6 +921,8 @@ def modo_manana():
     })
     D.pop("aviso", None)
     publicar(html, m, D, f"Picks del {hoy}")
+    if A:
+        enviar_arb(A, anterior)
 
 
 def resumen_propio(top):
@@ -738,6 +941,12 @@ def modo_actualizar():
         return
     juegos = polymarket_juegos(incluir_cerrados=True)
     espn = espn_juegos()
+    kalshi = kalshi_precios()
+    anterior = arb_anterior(D)
+    A = calcular_arb(juegos, espn, kalshi)
+    arb_cambio = bool(A) and (firma_arb(A) != firma_arb(anterior) or anterior is None)
+    if A:
+        D["arbitraje"] = A
     por_slug = {j["slug"]: j for j in juegos}
     cambios, lineas, terminados = False, [], 0
     for p in D["picks"]:
@@ -757,7 +966,6 @@ def modo_actualizar():
     if terminados:
         for p in D["picks"]:
             p.pop("nuevo", None)
-        kalshi = kalshi_precios()
         cands = [c for c in candidatos(juegos, espn, kalshi) if c["prob"] >= MIN_PROB
                  and not (c.get("deporte") == "⚽" and c.get("liga") in COPAS and c["prob"] < MIN_PROB_COPA)]
         usados = {p["partido"] for p in D["picks"]}
@@ -771,7 +979,11 @@ def modo_actualizar():
         bajas(nuevos)
         D["picks"] += nuevos
     if not cambios:
-        print("Sin cambios.")
+        if arb_cambio:  # solo cambió el arbitraje: publico la página sin el Telegram de picks
+            guardar_y_subir(html, m, D, f"Arbitraje {ahora:%H:%M}")
+            enviar_arb(A, anterior)
+        else:
+            print("Sin cambios.")
         return
     ok = sum(p.get("r") == "ok" for p in D["picks"]); fin = sum(p.get("r") in ("ok", "ko") for p in D["picks"])
     aviso = [f"🔄 Actualización {hora_txt(ahora)}"] + lineas
@@ -790,15 +1002,40 @@ def modo_actualizar():
         D.pop("aviso", None)
     print(D.get("aviso", "(sin aviso)"))
     if msg.startswith("Marcadores"):
-        j = json.dumps(D, ensure_ascii=False, indent=1)
-        if DRY:
-            return
-        open("index.html", "w", encoding="utf-8").write(html[:m.start(2)] + j + html[m.end(2):])
-        git = ["git", "-c", "user.name=franklinperez20", "-c", "user.email=franklinperez20@users.noreply.github.com"]
-        subprocess.run(git + ["commit", "-am", msg], check=True)
-        subprocess.run(["git", "push", "origin", "HEAD:main"])
+        guardar_y_subir(html, m, D, msg)
+    else:
+        publicar(html, m, D, msg)
+    if arb_cambio:
+        enviar_arb(A, anterior)
+
+
+def guardar_y_subir(html, m, D, msg):
+    """Publica la página sin mandar el Telegram de picks."""
+    j = json.dumps(D, ensure_ascii=False, indent=1)
+    json.loads(j)
+    if DRY:
+        print("DRY_RUN: no publico", msg)
         return
-    publicar(html, m, D, msg)
+    open("index.html", "w", encoding="utf-8").write(html[:m.start(2)] + j + html[m.end(2):])
+    git = ["git", "-c", "user.name=franklinperez20", "-c", "user.email=franklinperez20@users.noreply.github.com"]
+    subprocess.run(git + ["commit", "-am", msg], check=True)
+    for _ in range(3):
+        if subprocess.run(["git", "push", "origin", "HEAD:main"]).returncode == 0:
+            break
+        subprocess.run(git + ["pull", "--rebase", "origin", "main"])
+
+
+def modo_arbitraje():
+    """Solo recalcula el arbitraje y lo publica (prueba manual: modo = arbitraje)."""
+    html, m, D = leer_pagina()
+    juegos = polymarket_juegos(incluir_cerrados=False)
+    espn = espn_juegos()
+    kalshi = kalshi_precios()
+    anterior = arb_anterior(D)
+    A = arbitrajes(juegos, espn, kalshi)
+    D["arbitraje"] = A
+    guardar_y_subir(html, m, D, f"Arbitraje {ahora:%H:%M}")
+    enviar_arb(A, anterior)
 
 
 def modo_modelo():
@@ -827,7 +1064,7 @@ def modo_modelo():
 
 
 try:
-    {"manana": modo_manana, "modelo": modo_modelo}.get(MODO, modo_actualizar)()
+    {"manana": modo_manana, "modelo": modo_modelo, "arbitraje": modo_arbitraje}.get(MODO, modo_actualizar)()
 except Exception as e:
     import traceback
     traceback.print_exc()
