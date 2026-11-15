@@ -778,7 +778,7 @@ def modo_actualizar():
     if terminados:
         aviso.append("➕ Nuevos:" if nuevos else "➕ Nuevos: no quedan ganadores de 80 % para hoy")
         aviso += [f"• {c['deporte']} {c['apuesta']} – {c['prob']} %"
-                  + (f" (nuestro {c['nuestra']:.0f} %{' ✅' if coinciden(c) else ''})" if c.get("nuestra") is not None else "")
+                  + (f" (nuestro {int(c['nuestra'])} %{' ✅' if coinciden(c) else ''})" if c.get("nuestra") is not None else "")
                   + f" – {c['hora']}" for c in nuevos]
     aviso.append(f"Hoy van {ok} de {fin} acertados.")
     D["aviso"] = "\n".join(aviso)
@@ -817,7 +817,7 @@ def modo_modelo():
     for p in pend:
         n = p.get("nuestra")
         lineas.append(f"• {p['deporte']} {p['apuesta']} – mercado {p['prob']:.0f} % · nuestro "
-                      + (f"{n:.0f} %" + (" ✅" if coinciden(p) else " ⚠️" if n < 70 else "") if n is not None else "—"))
+                      + (f"{int(n)} %" + (" ✅" if coinciden(p) else " ⚠️" if n < 70 else "") if n is not None else "—"))
     lineas.append("✅ = los dos dicen 80 %+ (lo más sólido) · ⚠️ = nuestro modelo lo ve por debajo de 70 %")
     D["aviso"] = "\n".join(lineas)
     D["resumen"] = re.sub(r"\s*Nuestro modelo propio.*$", "", D.get("resumen", "")) + " " + resumen_propio(D["picks"])

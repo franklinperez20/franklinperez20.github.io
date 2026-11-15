@@ -16,7 +16,7 @@ for i, p in enumerate(D["picks"], 1):
     if n is None:
         nuestro = "Nuestro: —"
     else:
-        nuestro = f"Nuestro: *{n:.0f}%* " + ("✅" if n >= 80 and p["prob"] >= 80 else "⚠️" if n < 70 else "➖")
+        nuestro = f"Nuestro: *{int(n)}%* " + ("✅" if n >= 80 and p["prob"] >= 80 else "⚠️" if n < 70 else "➖")
     lines.append(f"    Mercado: *{p['prob']:.1f}%* {marca} · {nuestro}")
     lines.append(f"    {p['partido']} · {p['liga']} · {p['hora']}")
     if "🚑" in p.get("nota", ""):

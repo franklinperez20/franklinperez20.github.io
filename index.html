@@ -867,7 +867,7 @@ const cuota = p => (100/p).toFixed(2);
 // Nuestro modelo: probabilidad calculada solo con resultados reales (sin cuotas de casas de apuestas)
 const nuestroCls = p => p.nuestra==null ? 'na' : (p.nuestra>=80 && p.prob>=80) ? 'si' : p.nuestra>=70 ? 'med' : 'no';
 const nuestroHTML = p => `<div class="our" title="${(p.nuestra_txt||'').replace(/"/g,'')}"><div class="lbl">Nuestro</div>`
-  + (p.nuestra==null ? `<div class="n2 na">—</div>` : `<div class="n2 ${nuestroCls(p)}">${p.nuestra.toFixed(0)}%${nuestroCls(p)==='si'?' ✅':nuestroCls(p)==='no'?' ⚠️':''}</div>`)
+  + (p.nuestra==null ? `<div class="n2 na">—</div>` : `<div class="n2 ${nuestroCls(p)}">${Math.floor(p.nuestra)}%${nuestroCls(p)==='si'?' ✅':nuestroCls(p)==='no'?' ⚠️':''}</div>`)
   + `</div>`;
 const card=(p,i)=>{
   const cls = p.prob >= 80 ? 'hi' : 'mid';
