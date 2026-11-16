@@ -171,7 +171,7 @@
 <script id="data" type="application/json">{
  "fecha": "2026-11-16",
  "fecha_texto": "Lunes 16 de noviembre de 2026",
- "actualizado": "2026-11-16 15:04 (hora de Venezuela) · actualización automática",
+ "actualizado": "2026-11-16 16:03 (hora de Venezuela) · actualización automática",
  "resumen": "Solo apuestas a ganador que están en Polymarket. Revisé 1098 partidos de 79 ligas de todo el mundo. Hoy hay 7 ganadores de 80 % o más (90 %+: 0; 85 %+: 3), en: ATP, KHL, Liga Nacional (ARG), NBB Brasil, Nations League. El más alto es Lithuania con 86.7 %. Nuestro modelo propio (solo resultados reales, sin cuotas) calculó 2 de 7: coincide en 80 % o más en 2 (✅): Cruzeiro Basquete, Instituto Cordoba.",
  "picks": [
   {
@@ -204,7 +204,9 @@
    "inicio": "2026-11-16T14:30:00-04:00",
    "espn": "",
    "nuestra": null,
-   "nuestra_txt": "en tenis nuestro modelo aún no es confiable"
+   "nuestra_txt": "en tenis nuestro modelo aún no es confiable",
+   "r": "vivo",
+   "marcador": "En juego 2-5"
   },
   {
    "deporte": "🏀",
@@ -235,8 +237,8 @@
    "espn": "",
    "nuestra": null,
    "nuestra_txt": "partido no encontrado en LiveScore",
-   "r": "vivo",
-   "marcador": "En juego"
+   "r": "ok",
+   "marcador": "Final (resultado según Polymarket)"
   },
   {
    "deporte": "🎾",
@@ -837,11 +839,40 @@
  ],
  "fuentes": "Polymarket (obligatorio: solo entran partidos que están en Polymarket), cuotas DraftKings vía ESPN sin el margen de la casa, y Kalshi en NBA/NHL/NFL/MLB. La probabilidad es el promedio de las fuentes; si no coinciden por más de 12 puntos, se usa la más baja. Aparte, NUESTRO modelo calcula su propia probabilidad solo con resultados reales de LiveScore (sin cuotas) y lesionados de ESPN en NBA/NFL/NHL/MLB.",
  "arbitraje": {
-  "actualizado": "2026-11-16 15:04",
+  "actualizado": "2026-11-16 16:03",
   "base": 100.0,
-  "revisados": 23,
+  "revisados": 17,
   "oportunidades": [],
   "cercanas": [
+   {
+    "deporte": "🏀",
+    "liga": "NBA",
+    "partido": "Boston Celtics vs Orlando Magic",
+    "hora": "8:00 pm",
+    "suma": 101.28,
+    "invertido": 133.26,
+    "cobro": 131.58,
+    "ganancia": -1.68,
+    "pct": -1.26,
+    "patas": [
+     {
+      "casa": "Polymarket",
+      "apuesta": "Gana Celtics",
+      "cuota": 1.316,
+      "monto": 100.0,
+      "cobra": 131.58
+     },
+     {
+      "casa": "Kalshi",
+      "apuesta": "Gana Orlando Magic",
+      "cuota": 3.956,
+      "monto": 33.26,
+      "cobra": 131.58
+     }
+    ],
+    "empate": false,
+    "pm": "nba-orl-bos-2026-11-16"
+   },
    {
     "deporte": "🏀",
     "liga": "NBA",
@@ -872,91 +903,33 @@
     "pm": "nba-mem-was-2026-11-16"
    },
    {
-    "deporte": "⚽",
-    "liga": "Nations League",
-    "partido": "Germany vs Netherlands",
-    "hora": "3:45 pm",
-    "suma": 101.49,
-    "invertido": 189.74,
-    "cobro": 186.96,
-    "ganancia": -2.78,
-    "pct": -1.47,
-    "patas": [
-     {
-      "casa": "DraftKings",
-      "apuesta": "Gana Germany",
-      "cuota": 1.87,
-      "monto": 100.0,
-      "cobra": 186.96
-     },
-     {
-      "casa": "Polymarket",
-      "apuesta": "Germany NO gana",
-      "cuota": 2.083,
-      "monto": 89.74,
-      "cobra": 186.96
-     }
-    ],
-    "empate": true,
-    "pm": "unl-ger-nld-2026-11-16"
-   },
-   {
-    "deporte": "🏈",
-    "liga": "NFL",
-    "partido": "Baltimore Ravens vs Los Angeles Chargers",
-    "hora": "9:15 pm",
+    "deporte": "🏀",
+    "liga": "NBA",
+    "partido": "Miami Heat vs Houston Rockets",
+    "hora": "8:30 pm",
     "suma": 101.52,
-    "invertido": 149.3,
-    "cobro": 147.06,
-    "ganancia": -2.24,
+    "invertido": 179.61,
+    "cobro": 176.92,
+    "ganancia": -2.69,
     "pct": -1.5,
     "patas": [
      {
-      "casa": "Polymarket",
-      "apuesta": "Gana Ravens",
-      "cuota": 1.471,
-      "monto": 100.0,
-      "cobra": 147.06
-     },
-     {
-      "casa": "Kalshi",
-      "apuesta": "Gana Los Angeles Chargers",
-      "cuota": 2.983,
-      "monto": 49.3,
-      "cobra": 147.06
-     }
-    ],
-    "empate": false,
-    "pm": "nfl-lac-bal-2026-11-17"
-   },
-   {
-    "deporte": "🏀",
-    "liga": "NBA",
-    "partido": "Minnesota Timberwolves vs Portland Trail Blazers",
-    "hora": "9:00 pm",
-    "suma": 101.73,
-    "invertido": 184.96,
-    "cobro": 181.82,
-    "ganancia": -3.14,
-    "pct": -1.7,
-    "patas": [
-     {
-      "casa": "Polymarket",
-      "apuesta": "Gana Timberwolves",
-      "cuota": 1.818,
-      "monto": 100.0,
-      "cobra": 181.82
-     },
-     {
       "casa": "DraftKings",
-      "apuesta": "Gana Portland Trail Blazers",
-      "cuota": 2.14,
-      "monto": 84.96,
-      "cobra": 181.82
+      "apuesta": "Gana Houston Rockets",
+      "cuota": 1.769,
+      "monto": 100.0,
+      "cobra": 176.92
+     },
+     {
+      "casa": "Polymarket",
+      "apuesta": "Gana Heat",
+      "cuota": 2.222,
+      "monto": 79.61,
+      "cobra": 176.92
      }
     ],
     "empate": false,
-    "pm": "nba-por-min-2026-11-16"
+    "pm": "nba-hou-mia-2026-11-16"
    },
    {
     "deporte": "🏒",
@@ -986,10 +959,39 @@
     ],
     "empate": false,
     "pm": "nhl-mon-nyr-2026-11-16"
+   },
+   {
+    "deporte": "🏀",
+    "liga": "NBA",
+    "partido": "Cleveland Cavaliers vs Chicago Bulls",
+    "hora": "8:00 pm",
+    "suma": 101.91,
+    "invertido": 134.09,
+    "cobro": 131.58,
+    "ganancia": -2.51,
+    "pct": -1.87,
+    "patas": [
+     {
+      "casa": "Polymarket",
+      "apuesta": "Gana Cavaliers",
+      "cuota": 1.316,
+      "monto": 100.0,
+      "cobra": 131.58
+     },
+     {
+      "casa": "DraftKings",
+      "apuesta": "Gana Chicago Bulls",
+      "cuota": 3.86,
+      "monto": 34.09,
+      "cobra": 131.58
+     }
+    ],
+    "empate": false,
+    "pm": "nba-chi-cle-2026-11-16"
    }
   ]
  },
- "aviso": "🔄 Actualización 3:04 pm\n✔ Gana Lithuania · Final 2-1\n✔ Gana Iceland · Final 3-0\n➕ Nuevos: no quedan ganadores de 80 % para hoy\nHoy van 2 de 2 acertados."
+ "aviso": "🔄 Actualización 4:03 pm\n⏳ Gana Dino Prizmic (en juego)\n✔ Gana Lokomotiv Yaroslavl · Final (resultado según Polymarket)\n➕ Nuevos: no quedan ganadores de 80 % para hoy\nHoy van 3 de 3 acertados."
 }</script>
 
 <script>
