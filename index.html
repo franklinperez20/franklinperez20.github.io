@@ -171,7 +171,7 @@
 <script id="data" type="application/json">{
  "fecha": "2026-11-18",
  "fecha_texto": "Miércoles 18 de noviembre de 2026",
- "actualizado": "2026-11-18 12:09 (hora de Venezuela) · actualización automática",
+ "actualizado": "2026-11-18 13:16 (hora de Venezuela) · actualización automática",
  "resumen": "Solo apuestas a ganador que están en Polymarket. Revisé 1119 partidos de 81 ligas de todo el mundo. Hoy hay 11 ganadores de 80 % o más (90 %+: 3; 85 %+: 6), en: ATP, Basketball Champions League, Brasileirão, EuroCup, Extraliga Checa, LKL Lituania, NBA, NBB Brasil, VTB. El más alto es Unicaja con 96.3 %. Nuestro modelo propio (solo resultados reales, sin cuotas) calculó 8 de 11: coincide en 80 % o más en 3 (✅): Buducnost Podgorica, Miami Heat, Sesi/Franca BC SP.",
  "picks": [
   {
@@ -202,7 +202,9 @@
    "inicio": "2026-11-18T12:30:00-04:00",
    "espn": "",
    "nuestra": null,
-   "nuestra_txt": "partido no encontrado en LiveScore"
+   "nuestra_txt": "partido no encontrado en LiveScore",
+   "r": "vivo",
+   "marcador": "En juego"
   },
   {
    "deporte": "🏀",
@@ -313,7 +315,9 @@
    "inicio": "2026-11-18T13:00:00-04:00",
    "espn": "",
    "nuestra": 76.6,
-   "nuestra_txt": "11 y 11 partidos"
+   "nuestra_txt": "11 y 11 partidos",
+   "r": "vivo",
+   "marcador": "En juego"
   },
   {
    "deporte": "🏀",
@@ -328,7 +332,9 @@
    "inicio": "2026-11-18T12:50:00-04:00",
    "espn": "",
    "nuestra": 65.4,
-   "nuestra_txt": "9 y 13 partidos"
+   "nuestra_txt": "9 y 13 partidos",
+   "r": "vivo",
+   "marcador": "En juego"
   },
   {
    "deporte": "⚽",
@@ -993,11 +999,40 @@
  ],
  "fuentes": "Polymarket (obligatorio: solo entran partidos que están en Polymarket), cuotas DraftKings vía ESPN sin el margen de la casa, y Kalshi en NBA/NHL/NFL/MLB. La probabilidad es el promedio de las fuentes; si no coinciden por más de 12 puntos, se usa la más baja. Aparte, NUESTRO modelo calcula su propia probabilidad solo con resultados reales de LiveScore (sin cuotas) y lesionados de ESPN en NBA/NFL/NHL/MLB.",
  "arbitraje": {
-  "actualizado": "2026-11-18 12:09",
+  "actualizado": "2026-11-18 13:16",
   "base": 100.0,
-  "revisados": 62,
+  "revisados": 44,
   "oportunidades": [],
   "cercanas": [
+   {
+    "deporte": "🏀",
+    "liga": "NBA",
+    "partido": "Sacramento Kings vs Phoenix Suns",
+    "hora": "11:00 pm",
+    "suma": 100.47,
+    "invertido": 140.58,
+    "cobro": 139.92,
+    "ganancia": -0.66,
+    "pct": -0.47,
+    "patas": [
+     {
+      "casa": "Kalshi",
+      "apuesta": "Gana Phoenix Suns",
+      "cuota": 1.399,
+      "monto": 100.0,
+      "cobra": 139.92
+     },
+     {
+      "casa": "Polymarket",
+      "apuesta": "Gana Kings",
+      "cuota": 3.448,
+      "monto": 40.58,
+      "cobra": 139.92
+     }
+    ],
+    "empate": false,
+    "pm": "nba-phx-sac-2026-11-18"
+   },
    {
     "deporte": "🏀",
     "liga": "NBA",
@@ -1026,6 +1061,35 @@
     ],
     "empate": false,
     "pm": "nba-chi-bkn-2026-11-18"
+   },
+   {
+    "deporte": "🏀",
+    "liga": "NBA",
+    "partido": "Orlando Magic vs Philadelphia 76ers",
+    "hora": "8:00 pm",
+    "suma": 101.25,
+    "invertido": 198.53,
+    "cobro": 196.08,
+    "ganancia": -2.45,
+    "pct": -1.23,
+    "patas": [
+     {
+      "casa": "Polymarket",
+      "apuesta": "Gana 76ers",
+      "cuota": 1.961,
+      "monto": 100.0,
+      "cobra": 196.08
+     },
+     {
+      "casa": "DraftKings",
+      "apuesta": "Gana Orlando Magic",
+      "cuota": 1.99,
+      "monto": 98.53,
+      "cobra": 196.08
+     }
+    ],
+    "empate": false,
+    "pm": "nba-phi-orl-2026-11-18"
    },
    {
     "deporte": "🏀",
@@ -1059,35 +1123,6 @@
    {
     "deporte": "🏀",
     "liga": "NBA",
-    "partido": "Oklahoma City Thunder vs Atlanta Hawks",
-    "hora": "9:00 pm",
-    "suma": 101.44,
-    "invertido": 142.88,
-    "cobro": 140.85,
-    "ganancia": -2.03,
-    "pct": -1.42,
-    "patas": [
-     {
-      "casa": "Polymarket",
-      "apuesta": "Gana Thunder",
-      "cuota": 1.408,
-      "monto": 100.0,
-      "cobra": 140.85
-     },
-     {
-      "casa": "Kalshi",
-      "apuesta": "Gana Atlanta Hawks",
-      "cuota": 3.285,
-      "monto": 42.88,
-      "cobra": 140.85
-     }
-    ],
-    "empate": false,
-    "pm": "nba-atl-okc-2026-11-18"
-   },
-   {
-    "deporte": "🏀",
-    "liga": "NBA",
     "partido": "Denver Nuggets vs Boston Celtics",
     "hora": "10:30 pm",
     "suma": 101.45,
@@ -1113,39 +1148,10 @@
     ],
     "empate": false,
     "pm": "nba-bos-den-2026-11-18"
-   },
-   {
-    "deporte": "🏀",
-    "liga": "NBA",
-    "partido": "Sacramento Kings vs Phoenix Suns",
-    "hora": "11:00 pm",
-    "suma": 101.47,
-    "invertido": 141.98,
-    "cobro": 139.92,
-    "ganancia": -2.06,
-    "pct": -1.45,
-    "patas": [
-     {
-      "casa": "Kalshi",
-      "apuesta": "Gana Phoenix Suns",
-      "cuota": 1.399,
-      "monto": 100.0,
-      "cobra": 139.92
-     },
-     {
-      "casa": "Polymarket",
-      "apuesta": "Gana Kings",
-      "cuota": 3.333,
-      "monto": 41.98,
-      "cobra": 139.92
-     }
-    ],
-    "empate": false,
-    "pm": "nba-phx-sac-2026-11-18"
    }
   ]
  },
- "aviso": "🔄 Actualización 12:09 pm\n⏳ Gana Unics Kazan (en juego)\n⏳ Gana Dino Prizmic (en juego)\n⏳ Gana Třinec (en juego)\nHoy van 0 de 0 acertados."
+ "aviso": "🔄 Actualización 1:16 pm\n⏳ Gana MBA Moscow (en juego)\n⏳ Gana Galatasaray (en juego)\n⏳ Gana BC Rytas Vilnius (en juego)\nHoy van 0 de 0 acertados."
 }</script>
 
 <script>
