@@ -171,7 +171,7 @@
 <script id="data" type="application/json">{
  "fecha": "2026-11-18",
  "fecha_texto": "Miércoles 18 de noviembre de 2026",
- "actualizado": "2026-11-18 15:04 (hora de Venezuela) · actualización automática",
+ "actualizado": "2026-11-18 16:06 (hora de Venezuela) · actualización automática",
  "resumen": "Solo apuestas a ganador que están en Polymarket. Revisé 1119 partidos de 81 ligas de todo el mundo. Hoy hay 11 ganadores de 80 % o más (90 %+: 3; 85 %+: 6), en: ATP, Basketball Champions League, Brasileirão, EuroCup, Extraliga Checa, LKL Lituania, NBA, NBB Brasil, VTB. El más alto es Unicaja con 96.3 %. Nuestro modelo propio (solo resultados reales, sin cuotas) calculó 8 de 11: coincide en 80 % o más en 3 (✅): Buducnost Podgorica, Miami Heat, Sesi/Franca BC SP.",
  "picks": [
   {
@@ -187,7 +187,9 @@
    "inicio": "2026-11-18T15:30:00-04:00",
    "espn": "",
    "nuestra": 71.6,
-   "nuestra_txt": "11 y 17 partidos"
+   "nuestra_txt": "11 y 17 partidos",
+   "r": "vivo",
+   "marcador": "En juego"
   },
   {
    "deporte": "🏀",
@@ -318,8 +320,8 @@
    "espn": "",
    "nuestra": 76.6,
    "nuestra_txt": "11 y 11 partidos",
-   "r": "vivo",
-   "marcador": "En juego"
+   "r": "ok",
+   "marcador": "Final (resultado según Polymarket)"
   },
   {
    "deporte": "🏀",
@@ -335,8 +337,8 @@
    "espn": "",
    "nuestra": 65.4,
    "nuestra_txt": "9 y 13 partidos",
-   "r": "vivo",
-   "marcador": "En juego"
+   "r": "ko",
+   "marcador": "Final (resultado según Polymarket)"
   },
   {
    "deporte": "⚽",
@@ -1001,11 +1003,40 @@
  ],
  "fuentes": "Polymarket (obligatorio: solo entran partidos que están en Polymarket), cuotas DraftKings vía ESPN sin el margen de la casa, y Kalshi en NBA/NHL/NFL/MLB. La probabilidad es el promedio de las fuentes; si no coinciden por más de 12 puntos, se usa la más baja. Aparte, NUESTRO modelo calcula su propia probabilidad solo con resultados reales de LiveScore (sin cuotas) y lesionados de ESPN en NBA/NFL/NHL/MLB.",
  "arbitraje": {
-  "actualizado": "2026-11-18 15:04",
+  "actualizado": "2026-11-18 16:06",
   "base": 100.0,
-  "revisados": 27,
+  "revisados": 22,
   "oportunidades": [],
   "cercanas": [
+   {
+    "deporte": "🏀",
+    "liga": "NBA",
+    "partido": "Los Angeles Lakers vs Utah Jazz",
+    "hora": "11:00 pm",
+    "suma": 100.68,
+    "invertido": 129.07,
+    "cobro": 128.21,
+    "ganancia": -0.86,
+    "pct": -0.67,
+    "patas": [
+     {
+      "casa": "Polymarket",
+      "apuesta": "Gana Lakers",
+      "cuota": 1.282,
+      "monto": 100.0,
+      "cobra": 128.21
+     },
+     {
+      "casa": "DraftKings",
+      "apuesta": "Gana Utah Jazz",
+      "cuota": 4.41,
+      "monto": 29.07,
+      "cobra": 128.21
+     }
+    ],
+    "empate": false,
+    "pm": "nba-uta-lal-2026-11-18"
+   },
    {
     "deporte": "🏀",
     "liga": "NBA",
@@ -1067,64 +1098,6 @@
    {
     "deporte": "🏀",
     "liga": "NBA",
-    "partido": "Orlando Magic vs Philadelphia 76ers",
-    "hora": "8:00 pm",
-    "suma": 101.22,
-    "invertido": 197.62,
-    "cobro": 195.24,
-    "ganancia": -2.38,
-    "pct": -1.2,
-    "patas": [
-     {
-      "casa": "DraftKings",
-      "apuesta": "Gana Orlando Magic",
-      "cuota": 1.952,
-      "monto": 100.0,
-      "cobra": 195.24
-     },
-     {
-      "casa": "Polymarket",
-      "apuesta": "Gana 76ers",
-      "cuota": 2.0,
-      "monto": 97.62,
-      "cobra": 195.24
-     }
-    ],
-    "empate": false,
-    "pm": "nba-phi-orl-2026-11-18"
-   },
-   {
-    "deporte": "🏀",
-    "liga": "NBA",
-    "partido": "Oklahoma City Thunder vs Atlanta Hawks",
-    "hora": "9:00 pm",
-    "suma": 101.35,
-    "invertido": 142.05,
-    "cobro": 140.16,
-    "ganancia": -1.89,
-    "pct": -1.33,
-    "patas": [
-     {
-      "casa": "DraftKings",
-      "apuesta": "Gana Oklahoma City Thunder",
-      "cuota": 1.402,
-      "monto": 100.0,
-      "cobra": 140.16
-     },
-     {
-      "casa": "Polymarket",
-      "apuesta": "Gana Hawks",
-      "cuota": 3.333,
-      "monto": 42.05,
-      "cobra": 140.16
-     }
-    ],
-    "empate": false,
-    "pm": "nba-atl-okc-2026-11-18"
-   },
-   {
-    "deporte": "🏀",
-    "liga": "NBA",
     "partido": "Denver Nuggets vs Boston Celtics",
     "hora": "10:30 pm",
     "suma": 101.45,
@@ -1150,10 +1123,39 @@
     ],
     "empate": false,
     "pm": "nba-bos-den-2026-11-18"
+   },
+   {
+    "deporte": "🏀",
+    "liga": "NBA",
+    "partido": "Toronto Raptors vs Washington Wizards",
+    "hora": "8:30 pm",
+    "suma": 101.61,
+    "invertido": 154.87,
+    "cobro": 152.41,
+    "ganancia": -2.46,
+    "pct": -1.59,
+    "patas": [
+     {
+      "casa": "Kalshi",
+      "apuesta": "Gana Toronto Raptors",
+      "cuota": 1.524,
+      "monto": 100.0,
+      "cobra": 152.41
+     },
+     {
+      "casa": "Polymarket",
+      "apuesta": "Gana Wizards",
+      "cuota": 2.778,
+      "monto": 54.87,
+      "cobra": 152.41
+     }
+    ],
+    "empate": false,
+    "pm": "nba-was-tor-2026-11-18"
    }
   ]
  },
- "aviso": "🔄 Actualización 3:04 pm\n✘ Gana MBA Moscow · Final (resultado según Polymarket)\n✔ Gana Unics Kazan · Final (resultado según Polymarket)\n⏳ Gana Buducnost Podgorica (en juego)\n✔ Gana Třinec · Final (resultado según Polymarket)\n➕ Nuevos: no quedan ganadores de 80 % para hoy\nHoy van 2 de 3 acertados."
+ "aviso": "🔄 Actualización 4:06 pm\n⏳ Gana Unicaja (en juego)\n✔ Gana Galatasaray · Final (resultado según Polymarket)\n✘ Gana BC Rytas Vilnius · Final (resultado según Polymarket)\n➕ Nuevos: no quedan ganadores de 80 % para hoy\nHoy van 3 de 5 acertados."
 }</script>
 
 <script>
