@@ -171,7 +171,7 @@
 <script id="data" type="application/json">{
  "fecha": "2026-11-18",
  "fecha_texto": "Miércoles 18 de noviembre de 2026",
- "actualizado": "2026-11-18 17:01 (hora de Venezuela) · actualización automática",
+ "actualizado": "2026-11-18 17:58 (hora de Venezuela) · actualización automática",
  "resumen": "Solo apuestas a ganador que están en Polymarket. Revisé 1119 partidos de 81 ligas de todo el mundo. Hoy hay 11 ganadores de 80 % o más (90 %+: 3; 85 %+: 6), en: ATP, Basketball Champions League, Brasileirão, EuroCup, Extraliga Checa, LKL Lituania, NBA, NBB Brasil, VTB. El más alto es Unicaja con 96.3 %. Nuestro modelo propio (solo resultados reales, sin cuotas) calculó 8 de 11: coincide en 80 % o más en 3 (✅): Buducnost Podgorica, Miami Heat, Sesi/Franca BC SP.",
  "picks": [
   {
@@ -188,8 +188,8 @@
    "espn": "",
    "nuestra": 71.6,
    "nuestra_txt": "11 y 17 partidos",
-   "r": "vivo",
-   "marcador": "En juego"
+   "r": "ok",
+   "marcador": "Final (resultado según Polymarket)"
   },
   {
    "deporte": "🏀",
@@ -367,7 +367,6 @@
    "pm_eq": "Lakers",
    "inicio": "2026-11-18T23:00:00-04:00",
    "espn": "basketball/nba|401910017|Los Angeles Lakers|Utah Jazz",
-   "nuevo": true,
    "nuestra": 81.6,
    "nuestra_txt": "27 y 27 partidos"
   }
@@ -1019,41 +1018,98 @@
  ],
  "fuentes": "Polymarket (obligatorio: solo entran partidos que están en Polymarket), cuotas DraftKings vía ESPN sin el margen de la casa, y Kalshi en NBA/NHL/NFL/MLB. La probabilidad es el promedio de las fuentes; si no coinciden por más de 12 puntos, se usa la más baja. Aparte, NUESTRO modelo calcula su propia probabilidad solo con resultados reales de LiveScore (sin cuotas) y lesionados de ESPN en NBA/NFL/NHL/MLB.",
  "arbitraje": {
-  "actualizado": "2026-11-18 17:01",
+  "actualizado": "2026-11-18 17:58",
   "base": 100.0,
   "revisados": 22,
-  "oportunidades": [
+  "oportunidades": [],
+  "cercanas": [
+   {
+    "deporte": "🏀",
+    "liga": "NBA",
+    "partido": "Cleveland Cavaliers vs Memphis Grizzlies",
+    "hora": "8:00 pm",
+    "suma": 100.88,
+    "invertido": 160.13,
+    "cobro": 158.73,
+    "ganancia": -1.4,
+    "pct": -0.87,
+    "patas": [
+     {
+      "casa": "Polymarket",
+      "apuesta": "Gana Cavaliers",
+      "cuota": 1.587,
+      "monto": 100.0,
+      "cobra": 158.73
+     },
+     {
+      "casa": "DraftKings",
+      "apuesta": "Gana Memphis Grizzlies",
+      "cuota": 2.64,
+      "monto": 60.13,
+      "cobra": 158.73
+     }
+    ],
+    "empate": false,
+    "pm": "nba-mem-cle-2026-11-18"
+   },
+   {
+    "deporte": "🏀",
+    "liga": "NBA",
+    "partido": "Miami Heat vs Milwaukee Bucks",
+    "hora": "8:00 pm",
+    "suma": 100.89,
+    "invertido": 117.46,
+    "cobro": 116.42,
+    "ganancia": -1.04,
+    "pct": -0.89,
+    "patas": [
+     {
+      "casa": "Kalshi",
+      "apuesta": "Gana Miami Heat",
+      "cuota": 1.164,
+      "monto": 100.0,
+      "cobra": 116.42
+     },
+     {
+      "casa": "Polymarket",
+      "apuesta": "Gana Bucks",
+      "cuota": 6.667,
+      "monto": 17.46,
+      "cobra": 116.42
+     }
+    ],
+    "empate": false,
+    "pm": "nba-mil-mia-2026-11-18"
+   },
    {
     "deporte": "🏀",
     "liga": "NBA",
     "partido": "Los Angeles Lakers vs Utah Jazz",
     "hora": "11:00 pm",
-    "suma": 99.38,
-    "invertido": 122.12,
-    "cobro": 122.88,
-    "ganancia": 0.76,
-    "pct": 0.62,
+    "suma": 101.08,
+    "invertido": 123.27,
+    "cobro": 121.95,
+    "ganancia": -1.32,
+    "pct": -1.07,
     "patas": [
      {
-      "casa": "DraftKings",
-      "apuesta": "Gana Los Angeles Lakers",
-      "cuota": 1.229,
+      "casa": "Polymarket",
+      "apuesta": "Gana Lakers",
+      "cuota": 1.22,
       "monto": 100.0,
-      "cobra": 122.88
+      "cobra": 121.95
      },
      {
-      "casa": "Polymarket",
-      "apuesta": "Gana Jazz",
-      "cuota": 5.556,
-      "monto": 22.12,
-      "cobra": 122.88
+      "casa": "DraftKings",
+      "apuesta": "Gana Utah Jazz",
+      "cuota": 5.24,
+      "monto": 23.27,
+      "cobra": 121.95
      }
     ],
     "empate": false,
     "pm": "nba-uta-lal-2026-11-18"
-   }
-  ],
-  "cercanas": [
+   },
    {
     "deporte": "🏀",
     "liga": "NBA",
@@ -1111,97 +1167,10 @@
     ],
     "empate": false,
     "pm": "nba-hou-ind-2026-11-18"
-   },
-   {
-    "deporte": "🏀",
-    "liga": "NBA",
-    "partido": "Denver Nuggets vs Boston Celtics",
-    "hora": "10:30 pm",
-    "suma": 101.45,
-    "invertido": 181.17,
-    "cobro": 178.57,
-    "ganancia": -2.6,
-    "pct": -1.44,
-    "patas": [
-     {
-      "casa": "Polymarket",
-      "apuesta": "Gana Celtics",
-      "cuota": 1.786,
-      "monto": 100.0,
-      "cobra": 178.57
-     },
-     {
-      "casa": "DraftKings",
-      "apuesta": "Gana Denver Nuggets",
-      "cuota": 2.2,
-      "monto": 81.17,
-      "cobra": 178.57
-     }
-    ],
-    "empate": false,
-    "pm": "nba-bos-den-2026-11-18"
-   },
-   {
-    "deporte": "🏀",
-    "liga": "NBA",
-    "partido": "New Orleans Pelicans vs Detroit Pistons",
-    "hora": "9:00 pm",
-    "suma": 101.61,
-    "invertido": 158.77,
-    "cobro": 156.25,
-    "ganancia": -2.52,
-    "pct": -1.59,
-    "patas": [
-     {
-      "casa": "Polymarket",
-      "apuesta": "Gana Pistons",
-      "cuota": 1.562,
-      "monto": 100.0,
-      "cobra": 156.25
-     },
-     {
-      "casa": "Kalshi",
-      "apuesta": "Gana New Orleans Pelicans",
-      "cuota": 2.659,
-      "monto": 58.77,
-      "cobra": 156.25
-     }
-    ],
-    "empate": false,
-    "pm": "nba-det-nop-2026-11-18"
-   },
-   {
-    "deporte": "🏀",
-    "liga": "NBA",
-    "partido": "Dallas Mavericks vs Golden State Warriors",
-    "hora": "9:00 pm",
-    "suma": 101.61,
-    "invertido": 154.87,
-    "cobro": 152.41,
-    "ganancia": -2.46,
-    "pct": -1.59,
-    "patas": [
-     {
-      "casa": "Kalshi",
-      "apuesta": "Gana Dallas Mavericks",
-      "cuota": 1.524,
-      "monto": 100.0,
-      "cobra": 152.41
-     },
-     {
-      "casa": "Polymarket",
-      "apuesta": "Gana Warriors",
-      "cuota": 2.778,
-      "monto": 54.87,
-      "cobra": 152.41
-     }
-    ],
-    "empate": false,
-    "pm": "nba-gsw-dal-2026-11-18"
    }
   ]
  },
- "aviso": "🔄 Actualización 5:01 pm\n✔ Gana Buducnost Podgorica · Final (resultado según Polymarket)\n➕ Nuevos:\n• 🏀 Gana Los Angeles Lakers – 80.7 % (nuestro 81 % ✅) – 11:00 pm\nHoy van 4 de 6 acertados."
+ "aviso": "🔄 Actualización 5:58 pm\n✔ Gana Unicaja · Final (resultado según Polymarket)\n➕ Nuevos: no quedan ganadores de 80 % para hoy\nHoy van 5 de 7 acertados."
 }</script>
 
 <script>
