@@ -171,7 +171,7 @@
 <script id="data" type="application/json">{
  "fecha": "2026-11-21",
  "fecha_texto": "Sábado 21 de noviembre de 2026",
- "actualizado": "2026-11-21 06:47 (hora de Venezuela) · robot automático",
+ "actualizado": "2026-11-21 11:53 (hora de Venezuela) · actualización automática",
  "resumen": "Solo apuestas a ganador que están en Polymarket. Revisé 1138 partidos de 83 ligas de todo el mundo. Hoy hay 15 ganadores de 80 % o más (90 %+: 4; 85 %+: 7), en: Copa de Portugal, Eredivisie, LaLiga, Liga ABA, Liga Francesa, Liga Turca, Liga de Israel, NBA, Serbia, Superliga Turquía, VTB. El más alto es Sporting CP con 96.3 %. Nuestro modelo propio (solo resultados reales, sin cuotas) calculó 11 de 15: coincide en 80 % o más en 7 (✅): Hapoel Tel-Aviv, San Antonio Spurs, Chalon/Saone, Boston Celtics, Philadelphia 76ers, Spartak Subotica, Galatasaray.",
  "picks": [
   {
@@ -277,7 +277,9 @@
    "inicio": "2026-11-21T09:00:00-04:00",
    "espn": "",
    "nuestra": 71.8,
-   "nuestra_txt": "23 y 15 partidos"
+   "nuestra_txt": "23 y 15 partidos",
+   "r": "ok",
+   "marcador": "Final (resultado según Polymarket)"
   },
   {
    "deporte": "⚽",
@@ -322,7 +324,9 @@
    "inicio": "2026-11-21T11:00:00-04:00",
    "espn": "",
    "nuestra": null,
-   "nuestra_txt": "partido no encontrado en LiveScore"
+   "nuestra_txt": "partido no encontrado en LiveScore",
+   "r": "vivo",
+   "marcador": "En juego"
   },
   {
    "deporte": "🏀",
@@ -352,7 +356,9 @@
    "inicio": "2026-11-21T09:00:00-04:00",
    "espn": "soccer/tur.1|401888245|Galatasaray|Samsunspor",
    "nuestra": 84.1,
-   "nuestra_txt": "16 y 11 partidos"
+   "nuestra_txt": "16 y 11 partidos",
+   "r": "ok",
+   "marcador": "Final 2-1"
   },
   {
    "deporte": "🏀",
@@ -367,7 +373,9 @@
    "inicio": "2026-11-21T07:30:00-04:00",
    "espn": "",
    "nuestra": null,
-   "nuestra_txt": "partido no encontrado en LiveScore"
+   "nuestra_txt": "partido no encontrado en LiveScore",
+   "r": "ok",
+   "marcador": "Final (resultado según Polymarket)"
   },
   {
    "deporte": "🏀",
@@ -382,7 +390,9 @@
    "inicio": "2026-11-21T09:30:00-04:00",
    "espn": "",
    "nuestra": null,
-   "nuestra_txt": "partido no encontrado en LiveScore"
+   "nuestra_txt": "partido no encontrado en LiveScore",
+   "r": "ok",
+   "marcador": "Final (resultado según Polymarket)"
   },
   {
    "deporte": "⚽",
@@ -398,6 +408,22 @@
    "espn": "soccer/ned.1|401875543|Feyenoord Rotterdam|Excelsior",
    "nuestra": 77.8,
    "nuestra_txt": "18 y 13 partidos"
+  },
+  {
+   "deporte": "🏀",
+   "liga": "BBL Alemania",
+   "partido": "Gladiators Trier vs Chemnitz 99",
+   "hora": "3:00 pm",
+   "apuesta": "Gana Gladiators Trier",
+   "prob": 80.5,
+   "nota": "Polymarket 80.5 %",
+   "pm": "bkbbl-gla-che-2026-11-21",
+   "pm_eq": "Gladiators Trier",
+   "inicio": "2026-11-21T15:00:00-04:00",
+   "espn": "",
+   "nuevo": true,
+   "nuestra": 82.3,
+   "nuestra_txt": "16 y 19 partidos"
   }
  ],
  "historial": [
@@ -1215,52 +1241,137 @@
  ],
  "fuentes": "Polymarket (obligatorio: solo entran partidos que están en Polymarket), cuotas DraftKings vía ESPN sin el margen de la casa, y Kalshi en NBA/NHL/NFL/MLB. La probabilidad es el promedio de las fuentes; si no coinciden por más de 12 puntos, se usa la más baja. Aparte, NUESTRO modelo calcula su propia probabilidad solo con resultados reales de LiveScore (sin cuotas) y lesionados de ESPN en NBA/NFL/NHL/MLB.",
  "arbitraje": {
-  "actualizado": "2026-11-21 06:47",
+  "actualizado": "2026-11-21 11:53",
   "base": 100.0,
-  "revisados": 198,
-  "oportunidades": [
+  "revisados": 112,
+  "oportunidades": [],
+  "cercanas": [
+   {
+    "deporte": "🏀",
+    "liga": "NBA",
+    "partido": "San Antonio Spurs vs New Orleans Pelicans",
+    "hora": "9:00 pm",
+    "suma": 101.0,
+    "invertido": 110.99,
+    "cobro": 109.89,
+    "ganancia": -1.1,
+    "pct": -0.99,
+    "patas": [
+     {
+      "casa": "Polymarket",
+      "apuesta": "Gana Spurs",
+      "cuota": 1.099,
+      "monto": 100.0,
+      "cobra": 109.89
+     },
+     {
+      "casa": "DraftKings",
+      "apuesta": "Gana New Orleans Pelicans",
+      "cuota": 10.0,
+      "monto": 10.99,
+      "cobra": 109.89
+     }
+    ],
+    "empate": false,
+    "pm": "nba-nop-sas-2026-11-21"
+   },
    {
     "deporte": "⚽",
-    "liga": "Bundesliga",
-    "partido": "Borussia Mönchengladbach vs Borussia Dortmund",
-    "hora": "10:30 am",
-    "suma": 59.0,
-    "invertido": 295.0,
-    "cobro": 500.0,
-    "ganancia": 205.0,
-    "pct": 69.49,
+    "liga": "Chile",
+    "partido": "O'Higgins vs Universidad de Chile",
+    "hora": "5:00 pm",
+    "suma": 101.22,
+    "invertido": 197.62,
+    "cobro": 195.24,
+    "ganancia": -2.38,
+    "pct": -1.2,
     "patas": [
      {
       "casa": "DraftKings",
-      "apuesta": "Gana Borussia Mönchengladbach",
-      "cuota": 5.0,
+      "apuesta": "Gana Universidad de Chile",
+      "cuota": 1.952,
       "monto": 100.0,
-      "cobra": 500.0
+      "cobra": 195.24
      },
      {
       "casa": "Polymarket",
-      "apuesta": "BV Borussia 09 Dortmund NO gana",
-      "cuota": 2.564,
-      "monto": 195.0,
-      "cobra": 500.0
+      "apuesta": "CF Universidad de Chile NO gana",
+      "cuota": 2.0,
+      "monto": 97.62,
+      "cobra": 195.24
      }
     ],
     "empate": true,
-    "pm": "bun-moe-dor-2026-11-21",
-    "aviso": "Demasiado bueno: casi seguro es una cuota vieja o un error. Verifica las dos cuotas antes de apostar."
-   }
-  ],
-  "cercanas": [
+    "pm": "chi1-ohf-cud-2026-11-21"
+   },
+   {
+    "deporte": "🏒",
+    "liga": "NHL",
+    "partido": "Montreal Canadiens vs Philadelphia Flyers",
+    "hora": "8:00 pm",
+    "suma": 101.37,
+    "invertido": 171.82,
+    "cobro": 169.49,
+    "ganancia": -2.33,
+    "pct": -1.36,
+    "patas": [
+     {
+      "casa": "Polymarket",
+      "apuesta": "Gana Canadiens",
+      "cuota": 1.695,
+      "monto": 100.0,
+      "cobra": 169.49
+     },
+     {
+      "casa": "DraftKings",
+      "apuesta": "Gana Philadelphia Flyers",
+      "cuota": 2.36,
+      "monto": 71.82,
+      "cobra": 169.49
+     }
+    ],
+    "empate": false,
+    "pm": "nhl-phi-mon-2026-11-21"
+   },
+   {
+    "deporte": "🏒",
+    "liga": "NHL",
+    "partido": "Vancouver Canucks vs Minnesota Wild",
+    "hora": "11:00 pm",
+    "suma": 101.38,
+    "invertido": 138.88,
+    "cobro": 136.99,
+    "ganancia": -1.89,
+    "pct": -1.36,
+    "patas": [
+     {
+      "casa": "Polymarket",
+      "apuesta": "Gana Wild",
+      "cuota": 1.37,
+      "monto": 100.0,
+      "cobra": 136.99
+     },
+     {
+      "casa": "Kalshi",
+      "apuesta": "Gana Vancouver Canucks",
+      "cuota": 3.524,
+      "monto": 38.88,
+      "cobra": 136.99
+     }
+    ],
+    "empate": false,
+    "pm": "nhl-min-van-2026-11-21"
+   },
    {
     "deporte": "🏒",
     "liga": "NHL",
     "partido": "Toronto Maple Leafs vs Columbus Blue Jackets",
     "hora": "8:00 pm",
-    "suma": 100.5,
-    "invertido": 197.07,
+    "suma": 101.49,
+    "invertido": 199.01,
     "cobro": 196.08,
-    "ganancia": -0.99,
-    "pct": -0.5,
+    "ganancia": -2.93,
+    "pct": -1.47,
     "patas": [
      {
       "casa": "Polymarket",
@@ -1272,132 +1383,17 @@
      {
       "casa": "DraftKings",
       "apuesta": "Gana Columbus Blue Jackets",
-      "cuota": 2.02,
-      "monto": 97.07,
+      "cuota": 1.98,
+      "monto": 99.01,
       "cobra": 196.08
      }
     ],
     "empate": false,
     "pm": "nhl-cbj-tor-2026-11-21"
-   },
-   {
-    "deporte": "⚽",
-    "liga": "Ligue 1",
-    "partido": "Lens vs Toulouse",
-    "hora": "3:45 pm",
-    "suma": 100.51,
-    "invertido": 216.1,
-    "cobro": 215.0,
-    "ganancia": -1.1,
-    "pct": -0.51,
-    "patas": [
-     {
-      "casa": "DraftKings",
-      "apuesta": "Gana Lens",
-      "cuota": 2.15,
-      "monto": 100.0,
-      "cobra": 215.0
-     },
-     {
-      "casa": "Polymarket",
-      "apuesta": "Racing Club de Lens NO gana",
-      "cuota": 1.852,
-      "monto": 116.1,
-      "cobra": 215.0
-     }
-    ],
-    "empate": true,
-    "pm": "fl1-rcl-tou-2026-11-21"
-   },
-   {
-    "deporte": "⚽",
-    "liga": "Championship",
-    "partido": "Bolton Wanderers vs Portsmouth",
-    "hora": "11:00 am",
-    "suma": 100.74,
-    "invertido": 266.95,
-    "cobro": 265.0,
-    "ganancia": -1.95,
-    "pct": -0.73,
-    "patas": [
-     {
-      "casa": "DraftKings",
-      "apuesta": "Gana Portsmouth",
-      "cuota": 2.65,
-      "monto": 100.0,
-      "cobra": 265.0
-     },
-     {
-      "casa": "Polymarket",
-      "apuesta": "Portsmouth FC NO gana",
-      "cuota": 1.587,
-      "monto": 166.95,
-      "cobra": 265.0
-     }
-    ],
-    "empate": true,
-    "pm": "elc-bol-por-2026-11-21"
-   },
-   {
-    "deporte": "🏀",
-    "liga": "NBA",
-    "partido": "Sacramento Kings vs Boston Celtics",
-    "hora": "11:00 pm",
-    "suma": 100.84,
-    "invertido": 117.26,
-    "cobro": 116.28,
-    "ganancia": -0.98,
-    "pct": -0.84,
-    "patas": [
-     {
-      "casa": "Polymarket",
-      "apuesta": "Gana Celtics",
-      "cuota": 1.163,
-      "monto": 100.0,
-      "cobra": 116.28
-     },
-     {
-      "casa": "Kalshi",
-      "apuesta": "Gana Sacramento Kings",
-      "cuota": 6.737,
-      "monto": 17.26,
-      "cobra": 116.28
-     }
-    ],
-    "empate": false,
-    "pm": "nba-bos-sac-2026-11-21"
-   },
-   {
-    "deporte": "⚽",
-    "liga": "Ligue 1",
-    "partido": "AS Monaco vs AJ Auxerre",
-    "hora": "3:45 pm",
-    "suma": 101.23,
-    "invertido": 146.22,
-    "cobro": 144.44,
-    "ganancia": -1.78,
-    "pct": -1.22,
-    "patas": [
-     {
-      "casa": "DraftKings",
-      "apuesta": "Gana AS Monaco",
-      "cuota": 1.444,
-      "monto": 100.0,
-      "cobra": 144.44
-     },
-     {
-      "casa": "Polymarket",
-      "apuesta": "AS Monaco FC NO gana",
-      "cuota": 3.125,
-      "monto": 46.22,
-      "cobra": 144.44
-     }
-    ],
-    "empate": true,
-    "pm": "fl1-asm-aja-2026-11-21"
    }
   ]
- }
+ },
+ "aviso": "🔄 Actualización 11:53 am\n✔ Gana FK Crvena Zvezda Belgrade · Final (resultado según Polymarket)\n⏳ Gana Bahcesehir Koleji (en juego)\n✔ Gana Galatasaray · Final 2-1\n✔ Gana BC Zenit · Final (resultado según Polymarket)\n✔ Gana Parma Perm · Final (resultado según Polymarket)\n➕ Nuevos:\n• 🏀 Gana Gladiators Trier – 80.5 % (nuestro 82 % ✅) – 3:00 pm\nHoy van 4 de 4 acertados."
 }</script>
 
 <script>
