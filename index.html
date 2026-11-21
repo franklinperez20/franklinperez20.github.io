@@ -171,7 +171,7 @@
 <script id="data" type="application/json">{
  "fecha": "2026-11-21",
  "fecha_texto": "Sábado 21 de noviembre de 2026",
- "actualizado": "2026-11-21 15:53 (hora de Venezuela) · actualización automática",
+ "actualizado": "2026-11-21 16:51 (hora de Venezuela) · actualización automática",
  "resumen": "Solo apuestas a ganador que están en Polymarket. Revisé 1138 partidos de 83 ligas de todo el mundo. Hoy hay 15 ganadores de 80 % o más (90 %+: 4; 85 %+: 7), en: Copa de Portugal, Eredivisie, LaLiga, Liga ABA, Liga Francesa, Liga Turca, Liga de Israel, NBA, Serbia, Superliga Turquía, VTB. El más alto es Sporting CP con 96.3 %. Nuestro modelo propio (solo resultados reales, sin cuotas) calculó 11 de 15: coincide en 80 % o más en 7 (✅): Hapoel Tel-Aviv, San Antonio Spurs, Chalon/Saone, Boston Celtics, Philadelphia 76ers, Spartak Subotica, Galatasaray.",
  "picks": [
   {
@@ -189,7 +189,7 @@
    "nuestra": null,
    "nuestra_txt": "pocos partidos (19 y 1)",
    "r": "vivo",
-   "marcador": "En juego 0-0"
+   "marcador": "En juego 4-0"
   },
   {
    "deporte": "🏀",
@@ -302,7 +302,9 @@
    "inicio": "2026-11-21T16:00:00-04:00",
    "espn": "soccer/esp.1|401882798|Real Madrid|Celta Vigo",
    "nuestra": 65.5,
-   "nuestra_txt": "18 y 18 partidos"
+   "nuestra_txt": "18 y 18 partidos",
+   "r": "vivo",
+   "marcador": "En juego · 44' 0-1"
   },
   {
    "deporte": "🏀",
@@ -318,8 +320,8 @@
    "espn": "basketball/nba|401910023|Philadelphia 76ers|Milwaukee Bucks",
    "nuestra": 88.0,
    "nuestra_txt": "25 y 29 partidos",
-   "r": "vivo",
-   "marcador": "En juego · 10:08 - 4th 103-92"
+   "r": "ok",
+   "marcador": "Final 132-129"
   },
   {
    "deporte": "🏀",
@@ -1273,10 +1275,40 @@
  ],
  "fuentes": "Polymarket (obligatorio: solo entran partidos que están en Polymarket), cuotas DraftKings vía ESPN sin el margen de la casa, y Kalshi en NBA/NHL/NFL/MLB. La probabilidad es el promedio de las fuentes; si no coinciden por más de 12 puntos, se usa la más baja. Aparte, NUESTRO modelo calcula su propia probabilidad solo con resultados reales de LiveScore (sin cuotas) y lesionados de ESPN en NBA/NFL/NHL/MLB.",
  "arbitraje": {
-  "actualizado": "2026-11-21 15:53",
+  "actualizado": "2026-11-21 16:51",
   "base": 100.0,
-  "revisados": 44,
-  "oportunidades": [],
+  "revisados": 35,
+  "oportunidades": [
+   {
+    "deporte": "🏀",
+    "liga": "NBA",
+    "partido": "Sacramento Kings vs Boston Celtics",
+    "hora": "11:00 pm",
+    "suma": 97.29,
+    "invertido": 118.65,
+    "cobro": 121.95,
+    "ganancia": 3.3,
+    "pct": 2.78,
+    "patas": [
+     {
+      "casa": "Polymarket",
+      "apuesta": "Gana Celtics",
+      "cuota": 1.22,
+      "monto": 100.0,
+      "cobra": 121.95
+     },
+     {
+      "casa": "DraftKings",
+      "apuesta": "Gana Sacramento Kings",
+      "cuota": 6.54,
+      "monto": 18.65,
+      "cobra": 121.95
+     }
+    ],
+    "empate": false,
+    "pm": "nba-bos-sac-2026-11-21"
+   }
+  ],
   "cercanas": [
    {
     "deporte": "🏀",
@@ -1308,33 +1340,33 @@
     "pm": "nba-nop-sas-2026-11-21"
    },
    {
-    "deporte": "🏒",
-    "liga": "NHL",
-    "partido": "Detroit Red Wings vs New York Islanders",
-    "hora": "8:00 pm",
-    "suma": 100.52,
-    "invertido": 177.84,
-    "cobro": 176.92,
-    "ganancia": -0.92,
-    "pct": -0.52,
+    "deporte": "🏀",
+    "liga": "NBA",
+    "partido": "Minnesota Timberwolves vs Memphis Grizzlies",
+    "hora": "9:00 pm",
+    "suma": 100.78,
+    "invertido": 150.42,
+    "cobro": 149.25,
+    "ganancia": -1.17,
+    "pct": -0.78,
     "patas": [
      {
-      "casa": "DraftKings",
-      "apuesta": "Gana New York Islanders",
-      "cuota": 1.769,
+      "casa": "Polymarket",
+      "apuesta": "Gana Timberwolves",
+      "cuota": 1.493,
       "monto": 100.0,
-      "cobra": 176.92
+      "cobra": 149.25
      },
      {
-      "casa": "Polymarket",
-      "apuesta": "Gana Red Wings",
-      "cuota": 2.273,
-      "monto": 77.84,
-      "cobra": 176.92
+      "casa": "DraftKings",
+      "apuesta": "Gana Memphis Grizzlies",
+      "cuota": 2.96,
+      "monto": 50.42,
+      "cobra": 149.25
      }
     ],
     "empate": false,
-    "pm": "nhl-nyi-det-2026-11-21"
+    "pm": "nba-mem-min-2026-11-21"
    },
    {
     "deporte": "🏒",
@@ -1395,37 +1427,37 @@
     "pm": "nhl-wsh-bos-2026-11-21"
    },
    {
-    "deporte": "⚽",
-    "liga": "Liga MX",
-    "partido": "Tigres UANL vs América",
-    "hora": "11:00 pm",
-    "suma": 101.62,
-    "invertido": 213.4,
-    "cobro": 210.0,
-    "ganancia": -3.4,
-    "pct": -1.59,
+    "deporte": "🏒",
+    "liga": "NHL",
+    "partido": "Detroit Red Wings vs New York Islanders",
+    "hora": "8:00 pm",
+    "suma": 101.52,
+    "invertido": 179.61,
+    "cobro": 176.92,
+    "ganancia": -2.69,
+    "pct": -1.5,
     "patas": [
      {
       "casa": "DraftKings",
-      "apuesta": "Gana América",
-      "cuota": 2.1,
+      "apuesta": "Gana New York Islanders",
+      "cuota": 1.769,
       "monto": 100.0,
-      "cobra": 210.0
+      "cobra": 176.92
      },
      {
       "casa": "Polymarket",
-      "apuesta": "CF América NO gana",
-      "cuota": 1.852,
-      "monto": 113.4,
-      "cobra": 210.0
+      "apuesta": "Gana Red Wings",
+      "cuota": 2.222,
+      "monto": 79.61,
+      "cobra": 176.92
      }
     ],
-    "empate": true,
-    "pm": "mex-tig-ame-2026-11-21"
+    "empate": false,
+    "pm": "nhl-nyi-det-2026-11-21"
    }
   ]
  },
- "aviso": "🔄 Actualización 3:53 pm\n✔ Gana Chalon/Saone · Final (resultado según Polymarket)\n✔ Gana Spartak Subotica · Final (resultado según Polymarket)\n✘ Gana Feyenoord Rotterdam · Final 2-3\n⏳ Gana Gladiators Trier (en juego)\n⏳ Gana Nanterre (en juego)\n➕ Nuevos: no quedan ganadores de 80 % para hoy\nHoy van 8 de 9 acertados."
+ "aviso": "🔄 Actualización 4:51 pm\n⏳ Gana Real Madrid (en juego)\n✔ Gana Philadelphia 76ers · Final 132-129\n➕ Nuevos: no quedan ganadores de 80 % para hoy\nHoy van 9 de 10 acertados."
 }</script>
 
 <script>
