@@ -171,7 +171,7 @@
 <script id="data" type="application/json">{
  "fecha": "2026-11-21",
  "fecha_texto": "Sábado 21 de noviembre de 2026",
- "actualizado": "2026-11-21 13:51 (hora de Venezuela) · actualización automática",
+ "actualizado": "2026-11-21 14:56 (hora de Venezuela) · actualización automática",
  "resumen": "Solo apuestas a ganador que están en Polymarket. Revisé 1138 partidos de 83 ligas de todo el mundo. Hoy hay 15 ganadores de 80 % o más (90 %+: 4; 85 %+: 7), en: Copa de Portugal, Eredivisie, LaLiga, Liga ABA, Liga Francesa, Liga Turca, Liga de Israel, NBA, Serbia, Superliga Turquía, VTB. El más alto es Sporting CP con 96.3 %. Nuestro modelo propio (solo resultados reales, sin cuotas) calculó 11 de 15: coincide en 80 % o más en 7 (✅): Hapoel Tel-Aviv, San Antonio Spurs, Chalon/Saone, Boston Celtics, Philadelphia 76ers, Spartak Subotica, Galatasaray.",
  "picks": [
   {
@@ -187,7 +187,9 @@
    "inicio": "2026-11-21T14:00:00-04:00",
    "espn": "",
    "nuestra": null,
-   "nuestra_txt": "pocos partidos (19 y 1)"
+   "nuestra_txt": "pocos partidos (19 y 1)",
+   "r": "vivo",
+   "marcador": "En juego 0-0"
   },
   {
    "deporte": "🏀",
@@ -203,8 +205,8 @@
    "espn": "",
    "nuestra": 92.8,
    "nuestra_txt": "18 y 6 partidos",
-   "r": "vivo",
-   "marcador": "En juego"
+   "r": "ok",
+   "marcador": "Final (resultado según Polymarket)"
   },
   {
    "deporte": "🏀",
@@ -251,7 +253,9 @@
    "inicio": "2026-11-21T14:55:00-04:00",
    "espn": "",
    "nuestra": 69.9,
-   "nuestra_txt": "18 y 10 partidos"
+   "nuestra_txt": "18 y 10 partidos",
+   "r": "vivo",
+   "marcador": "En juego"
   },
   {
    "deporte": "🏀",
@@ -313,7 +317,9 @@
    "inicio": "2026-11-21T14:00:00-04:00",
    "espn": "basketball/nba|401910023|Philadelphia 76ers|Milwaukee Bucks",
    "nuestra": 88.0,
-   "nuestra_txt": "25 y 29 partidos"
+   "nuestra_txt": "25 y 29 partidos",
+   "r": "vivo",
+   "marcador": "En juego · 2:34 - 2nd 52-59"
   },
   {
    "deporte": "🏀",
@@ -415,7 +421,7 @@
    "nuestra": 77.8,
    "nuestra_txt": "18 y 13 partidos",
    "r": "vivo",
-   "marcador": "En juego · 6' 1-0"
+   "marcador": "En juego · 52' 1-2"
   },
   {
    "deporte": "🏀",
@@ -431,6 +437,22 @@
    "espn": "",
    "nuestra": 82.3,
    "nuestra_txt": "16 y 19 partidos"
+  },
+  {
+   "deporte": "🏀",
+   "liga": "Liga Francesa",
+   "partido": "Nanterre vs Strasbourg",
+   "hora": "3:30 pm",
+   "apuesta": "Gana Nanterre",
+   "prob": 80.5,
+   "nota": "Polymarket 80.5 %",
+   "pm": "bkfr1-nan2-str-2026-11-21",
+   "pm_eq": "Nanterre",
+   "inicio": "2026-11-21T15:30:00-04:00",
+   "espn": "",
+   "nuevo": true,
+   "nuestra": 75.8,
+   "nuestra_txt": "12 y 13 partidos"
   }
  ],
  "historial": [
@@ -1248,11 +1270,40 @@
  ],
  "fuentes": "Polymarket (obligatorio: solo entran partidos que están en Polymarket), cuotas DraftKings vía ESPN sin el margen de la casa, y Kalshi en NBA/NHL/NFL/MLB. La probabilidad es el promedio de las fuentes; si no coinciden por más de 12 puntos, se usa la más baja. Aparte, NUESTRO modelo calcula su propia probabilidad solo con resultados reales de LiveScore (sin cuotas) y lesionados de ESPN en NBA/NFL/NHL/MLB.",
  "arbitraje": {
-  "actualizado": "2026-11-21 13:51",
+  "actualizado": "2026-11-21 14:56",
   "base": 100.0,
-  "revisados": 74,
+  "revisados": 62,
   "oportunidades": [],
   "cercanas": [
+   {
+    "deporte": "🏀",
+    "liga": "NBA",
+    "partido": "San Antonio Spurs vs New Orleans Pelicans",
+    "hora": "9:00 pm",
+    "suma": 100.52,
+    "invertido": 108.65,
+    "cobro": 108.09,
+    "ganancia": -0.56,
+    "pct": -0.52,
+    "patas": [
+     {
+      "casa": "Kalshi",
+      "apuesta": "Gana San Antonio Spurs",
+      "cuota": 1.081,
+      "monto": 100.0,
+      "cobra": 108.09
+     },
+     {
+      "casa": "Polymarket",
+      "apuesta": "Gana Pelicans",
+      "cuota": 12.5,
+      "monto": 8.65,
+      "cobra": 108.09
+     }
+    ],
+    "empate": false,
+    "pm": "nba-nop-sas-2026-11-21"
+   },
    {
     "deporte": "🏒",
     "liga": "NHL",
@@ -1285,71 +1336,42 @@
    {
     "deporte": "🏒",
     "liga": "NHL",
-    "partido": "Carolina Hurricanes vs Edmonton Oilers",
-    "hora": "2:00 pm",
-    "suma": 100.55,
-    "invertido": 146.68,
-    "cobro": 145.87,
-    "ganancia": -0.81,
-    "pct": -0.55,
+    "partido": "Utah Mammoth vs Anaheim Ducks",
+    "hora": "10:00 pm",
+    "suma": 101.37,
+    "invertido": 171.82,
+    "cobro": 169.49,
+    "ganancia": -2.33,
+    "pct": -1.36,
     "patas": [
+     {
+      "casa": "Polymarket",
+      "apuesta": "Gana Utah",
+      "cuota": 1.695,
+      "monto": 100.0,
+      "cobra": 169.49
+     },
      {
       "casa": "DraftKings",
-      "apuesta": "Gana Carolina Hurricanes",
-      "cuota": 1.459,
-      "monto": 100.0,
-      "cobra": 145.87
-     },
-     {
-      "casa": "Polymarket",
-      "apuesta": "Gana Oilers",
-      "cuota": 3.125,
-      "monto": 46.68,
-      "cobra": 145.87
+      "apuesta": "Gana Anaheim Ducks",
+      "cuota": 2.36,
+      "monto": 71.82,
+      "cobra": 169.49
      }
     ],
     "empate": false,
-    "pm": "nhl-edm-car-2026-11-21"
-   },
-   {
-    "deporte": "🏀",
-    "liga": "NBA",
-    "partido": "San Antonio Spurs vs New Orleans Pelicans",
-    "hora": "9:00 pm",
-    "suma": 100.57,
-    "invertido": 110.52,
-    "cobro": 109.89,
-    "ganancia": -0.63,
-    "pct": -0.57,
-    "patas": [
-     {
-      "casa": "Polymarket",
-      "apuesta": "Gana Spurs",
-      "cuota": 1.099,
-      "monto": 100.0,
-      "cobra": 109.89
-     },
-     {
-      "casa": "Kalshi",
-      "apuesta": "Gana New Orleans Pelicans",
-      "cuota": 10.446,
-      "monto": 10.52,
-      "cobra": 109.89
-     }
-    ],
-    "empate": false,
-    "pm": "nba-nop-sas-2026-11-21"
+    "pm": "nhl-ana-utah-2026-11-21"
    },
    {
     "deporte": "🏒",
     "liga": "NHL",
     "partido": "Vancouver Canucks vs Minnesota Wild",
     "hora": "11:00 pm",
-    "suma": 100.78,
-    "invertido": 138.05,
+    "suma": 101.38,
+    "invertido": 138.88,
     "cobro": 136.99,
-    "ganancia": -1.06,
-    "pct": -0.77,
+    "ganancia": -1.89,
+    "pct": -1.36,
     "patas": [
      {
       "casa": "Polymarket",
@@ -1359,10 +1381,10 @@
       "cobra": 136.99
      },
      {
-      "casa": "DraftKings",
+      "casa": "Kalshi",
       "apuesta": "Gana Vancouver Canucks",
-      "cuota": 3.6,
-      "monto": 38.05,
+      "cuota": 3.524,
+      "monto": 38.88,
       "cobra": 136.99
      }
     ],
@@ -1371,36 +1393,36 @@
    },
    {
     "deporte": "⚽",
-    "liga": "Bélgica",
-    "partido": "KV Mechelen vs Club Brugge",
+    "liga": "Ligue 1",
+    "partido": "AS Monaco vs AJ Auxerre",
     "hora": "3:45 pm",
-    "suma": 101.22,
-    "invertido": 140.15,
-    "cobro": 138.46,
-    "ganancia": -1.69,
-    "pct": -1.21,
+    "suma": 101.43,
+    "invertido": 142.0,
+    "cobro": 140.0,
+    "ganancia": -2.0,
+    "pct": -1.41,
     "patas": [
      {
       "casa": "DraftKings",
-      "apuesta": "Gana Club Brugge",
-      "cuota": 1.385,
+      "apuesta": "Gana AS Monaco",
+      "cuota": 1.4,
       "monto": 100.0,
-      "cobra": 138.46
+      "cobra": 140.0
      },
      {
       "casa": "Polymarket",
-      "apuesta": "Club Brugge NO gana",
-      "cuota": 3.448,
-      "monto": 40.15,
-      "cobra": 138.46
+      "apuesta": "AS Monaco FC NO gana",
+      "cuota": 3.333,
+      "monto": 42.0,
+      "cobra": 140.0
      }
     ],
     "empate": true,
-    "pm": "bel1-yrm-bru-2026-11-21"
+    "pm": "fl1-asm-aja-2026-11-21"
    }
   ]
  },
- "aviso": "🔄 Actualización 1:51 pm\n⏳ Gana Chalon/Saone (en juego)\n✔ Gana Bahcesehir Koleji · Final (resultado según Polymarket)\n⏳ Gana Spartak Subotica (en juego)\n⏳ Gana Feyenoord Rotterdam (en juego)\n➕ Nuevos: no quedan ganadores de 80 % para hoy\nHoy van 5 de 5 acertados."
+ "aviso": "🔄 Actualización 2:56 pm\n⏳ Gana Sporting CP (en juego)\n✔ Gana Hapoel Tel-Aviv · Final (resultado según Polymarket)\n⏳ Gana Maccabi Tel-Aviv (en juego)\n⏳ Gana Philadelphia 76ers (en juego)\n➕ Nuevos:\n• 🏀 Gana Nanterre – 80.5 % (nuestro 75 %) – 3:30 pm\nHoy van 6 de 6 acertados."
 }</script>
 
 <script>
