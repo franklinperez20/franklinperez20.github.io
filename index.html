@@ -171,7 +171,7 @@
 <script id="data" type="application/json">{
  "fecha": "2026-11-22",
  "fecha_texto": "Domingo 22 de noviembre de 2026",
- "actualizado": "2026-11-22 06:47 (hora de Venezuela) · robot automático",
+ "actualizado": "2026-11-22 11:53 (hora de Venezuela) · actualización automática",
  "resumen": "Solo apuestas a ganador que están en Polymarket. Revisé 1140 partidos de 83 ligas de todo el mundo. Hoy hay 15 ganadores de 80 % o más (90 %+: 7; 85 %+: 13), en: Copa de Portugal, Eredivisie, Grecia, Lega Basket, Liga ABA, Liga ACB, Liga Francesa, NBB Brasil, NFL, Superliga Turquía. El más alto es Cedevita Olimpija con 99.4 %. Nuestro modelo propio (solo resultados reales, sin cuotas) calculó 11 de 15: coincide en 80 % o más en 6 (✅): Paris Basketball, Buffalo Bills, Kansas City Chiefs, FC Twente, Real Madrid, Trabzonspor.",
  "picks": [
   {
@@ -232,7 +232,9 @@
    "inicio": "2026-11-22T10:00:00-04:00",
    "espn": "",
    "nuestra": null,
-   "nuestra_txt": "pocos partidos (12 y 0)"
+   "nuestra_txt": "pocos partidos (12 y 0)",
+   "r": "vivo",
+   "marcador": "En juego 3-1"
   },
   {
    "deporte": "🏀",
@@ -247,7 +249,9 @@
    "inicio": "2026-11-22T11:30:00-04:00",
    "espn": "",
    "nuestra": 91.2,
-   "nuestra_txt": "22 y 8 partidos"
+   "nuestra_txt": "22 y 8 partidos",
+   "r": "vivo",
+   "marcador": "En juego"
   },
   {
    "deporte": "🏈",
@@ -307,7 +311,9 @@
    "inicio": "2026-11-22T07:15:00-04:00",
    "espn": "soccer/ned.1|401875545|FC Twente|Willem II",
    "nuestra": 93.2,
-   "nuestra_txt": "20 y 13 partidos"
+   "nuestra_txt": "20 y 13 partidos",
+   "r": "ok",
+   "marcador": "Final 2-1"
   },
   {
    "deporte": "🏀",
@@ -398,6 +404,22 @@
    "espn": "football/nfl|401873071|Chicago Bears|New Orleans Saints",
    "nuestra": 75.6,
    "nuestra_txt": "14 y 12 partidos"
+  },
+  {
+   "deporte": "🏀",
+   "liga": "NBB Brasil",
+   "partido": "Mogi das Cruzes vs CA Paulistano SP",
+   "hora": "4:00 pm",
+   "apuesta": "Gana Mogi das Cruzes",
+   "prob": 85.5,
+   "nota": "Polymarket 85.5 %",
+   "pm": "bknbb-mog-ca-2026-11-22",
+   "pm_eq": "Mogi das Cruzes",
+   "inicio": "2026-11-22T16:00:00-04:00",
+   "espn": "",
+   "nuevo": true,
+   "nuestra": 86.8,
+   "nuestra_txt": "8 y 8 partidos"
   }
  ],
  "historial": [
@@ -1334,21 +1356,50 @@
  ],
  "fuentes": "Polymarket (obligatorio: solo entran partidos que están en Polymarket), cuotas DraftKings vía ESPN sin el margen de la casa, y Kalshi en NBA/NHL/NFL/MLB. La probabilidad es el promedio de las fuentes; si no coinciden por más de 12 puntos, se usa la más baja. Aparte, NUESTRO modelo calcula su propia probabilidad solo con resultados reales de LiveScore (sin cuotas) y lesionados de ESPN en NBA/NFL/NHL/MLB.",
  "arbitraje": {
-  "actualizado": "2026-11-22 06:47",
+  "actualizado": "2026-11-22 11:53",
   "base": 100.0,
-  "revisados": 181,
+  "revisados": 101,
   "oportunidades": [],
   "cercanas": [
    {
     "deporte": "🏈",
     "liga": "NFL",
+    "partido": "Buffalo Bills vs Miami Dolphins",
+    "hora": "2:00 pm",
+    "suma": 100.52,
+    "invertido": 108.65,
+    "cobro": 108.09,
+    "ganancia": -0.56,
+    "pct": -0.52,
+    "patas": [
+     {
+      "casa": "Kalshi",
+      "apuesta": "Gana Buffalo Bills",
+      "cuota": 1.081,
+      "monto": 100.0,
+      "cobra": 108.09
+     },
+     {
+      "casa": "Polymarket",
+      "apuesta": "Gana Dolphins",
+      "cuota": 12.5,
+      "monto": 8.65,
+      "cobra": 108.09
+     }
+    ],
+    "empate": false,
+    "pm": "nfl-mia-buf-2026-11-22"
+   },
+   {
+    "deporte": "🏈",
+    "liga": "NFL",
     "partido": "Denver Broncos vs Las Vegas Raiders",
     "hora": "5:25 pm",
-    "suma": 100.3,
-    "invertido": 120.84,
+    "suma": 100.54,
+    "invertido": 121.14,
     "cobro": 120.48,
-    "ganancia": -0.36,
-    "pct": -0.3,
+    "ganancia": -0.66,
+    "pct": -0.54,
     "patas": [
      {
       "casa": "Polymarket",
@@ -1360,8 +1411,8 @@
      {
       "casa": "DraftKings",
       "apuesta": "Gana Las Vegas Raiders",
-      "cuota": 5.78,
-      "monto": 20.84,
+      "cuota": 5.7,
+      "monto": 21.14,
       "cobra": 120.48
      }
     ],
@@ -1369,123 +1420,95 @@
     "pm": "nfl-lv-den-2026-11-22"
    },
    {
-    "deporte": "🏈",
-    "liga": "NFL",
-    "partido": "Detroit Lions vs Tampa Bay Buccaneers",
-    "hora": "2:00 pm",
-    "suma": 100.67,
-    "invertido": 151.0,
-    "cobro": 150.0,
-    "ganancia": -1.0,
-    "pct": -0.66,
+    "deporte": "🏀",
+    "liga": "NBA",
+    "partido": "Golden State Warriors vs Boston Celtics",
+    "hora": "9:30 pm",
+    "suma": 100.91,
+    "invertido": 134.54,
+    "cobro": 133.33,
+    "ganancia": -1.21,
+    "pct": -0.9,
     "patas": [
      {
-      "casa": "DraftKings",
-      "apuesta": "Gana Detroit Lions",
-      "cuota": 1.5,
+      "casa": "Polymarket",
+      "apuesta": "Gana Celtics",
+      "cuota": 1.333,
       "monto": 100.0,
-      "cobra": 150.0
+      "cobra": 133.33
      },
      {
-      "casa": "Polymarket",
-      "apuesta": "Gana Buccaneers",
-      "cuota": 2.941,
-      "monto": 51.0,
-      "cobra": 150.0
+      "casa": "DraftKings",
+      "apuesta": "Gana Golden State Warriors",
+      "cuota": 3.86,
+      "monto": 34.54,
+      "cobra": 133.33
      }
     ],
     "empate": false,
-    "pm": "nfl-tb-det-2026-11-22"
-   },
-   {
-    "deporte": "⚽",
-    "liga": "LaLiga",
-    "partido": "Barcelona vs Villarreal",
-    "hora": "9:00 am",
-    "suma": 101.0,
-    "invertido": 120.24,
-    "cobro": 119.05,
-    "ganancia": -1.19,
-    "pct": -0.99,
-    "patas": [
-     {
-      "casa": "DraftKings",
-      "apuesta": "Gana Barcelona",
-      "cuota": 1.19,
-      "monto": 100.0,
-      "cobra": 119.05
-     },
-     {
-      "casa": "Polymarket",
-      "apuesta": "FC Barcelona NO gana",
-      "cuota": 5.882,
-      "monto": 20.24,
-      "cobra": 119.05
-     }
-    ],
-    "empate": true,
-    "pm": "lal-bar-vil-2026-11-22"
+    "pm": "nba-bos-gsw-2026-11-22"
    },
    {
     "deporte": "🏀",
     "liga": "NBA",
-    "partido": "Washington Wizards vs Orlando Magic",
+    "partido": "Chicago Bulls vs Denver Nuggets",
     "hora": "8:00 pm",
-    "suma": 101.09,
-    "invertido": 153.16,
-    "cobro": 151.52,
-    "ganancia": -1.64,
-    "pct": -1.07,
+    "suma": 101.16,
+    "invertido": 128.05,
+    "cobro": 126.58,
+    "ganancia": -1.47,
+    "pct": -1.15,
     "patas": [
      {
       "casa": "Polymarket",
-      "apuesta": "Gana Magic",
-      "cuota": 1.515,
+      "apuesta": "Gana Nuggets",
+      "cuota": 1.266,
       "monto": 100.0,
-      "cobra": 151.52
+      "cobra": 126.58
      },
      {
-      "casa": "DraftKings",
-      "apuesta": "Gana Washington Wizards",
-      "cuota": 2.85,
-      "monto": 53.16,
-      "cobra": 151.52
+      "casa": "Kalshi",
+      "apuesta": "Gana Chicago Bulls",
+      "cuota": 4.512,
+      "monto": 28.05,
+      "cobra": 126.58
      }
     ],
     "empate": false,
-    "pm": "nba-orl-was-2026-11-22"
+    "pm": "nba-den-chi-2026-11-22"
    },
    {
-    "deporte": "⚽",
-    "liga": "Ligue 1",
-    "partido": "Marseille vs Le Mans",
-    "hora": "3:45 pm",
-    "suma": 101.25,
-    "invertido": 148.35,
-    "cobro": 146.51,
-    "ganancia": -1.84,
-    "pct": -1.24,
+    "deporte": "🏀",
+    "liga": "NBA",
+    "partido": "New York Knicks vs Indiana Pacers",
+    "hora": "9:00 pm",
+    "suma": 101.31,
+    "invertido": 132.76,
+    "cobro": 131.04,
+    "ganancia": -1.72,
+    "pct": -1.3,
     "patas": [
      {
-      "casa": "DraftKings",
-      "apuesta": "Gana Marseille",
-      "cuota": 1.465,
+      "casa": "Kalshi",
+      "apuesta": "Gana New York Knicks",
+      "cuota": 1.31,
       "monto": 100.0,
-      "cobra": 146.51
+      "cobra": 131.04
      },
      {
       "casa": "Polymarket",
-      "apuesta": "Olympique de Marseille NO gana",
-      "cuota": 3.03,
-      "monto": 48.35,
-      "cobra": 146.51
+      "apuesta": "Gana Pacers",
+      "cuota": 4.0,
+      "monto": 32.76,
+      "cobra": 131.04
      }
     ],
-    "empate": true,
-    "pm": "fl1-olm-lmf-2026-11-22"
+    "empate": false,
+    "pm": "nba-ind-nyk-2026-11-22"
    }
   ]
- }
+ },
+ "aviso": "🔄 Actualización 11:53 am\n⏳ Gana Gil Vicente FC (en juego)\n⏳ Gana Paris Basketball (en juego)\n✔ Gana FC Twente · Final 2-1\n➕ Nuevos:\n• 🏀 Gana Mogi das Cruzes – 85.5 % (nuestro 86 % ✅) – 4:00 pm\nHoy van 1 de 1 acertados."
 }</script>
 
 <script>
